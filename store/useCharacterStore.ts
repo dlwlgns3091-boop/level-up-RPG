@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { ClassKey, StatKey } from "@/constants/theme";
 import {
+  allocateStatPoints as dbAllocateStatPoints,
   createCharacter as dbCreateCharacter,
   getCharacter as dbGetCharacter,
   incrementStat as dbIncrementStat,
@@ -46,6 +47,7 @@ type CharacterState = {
   createCharacter: (input: { name: string; class: ClassKey }) => Character;
   completeQuest: (templateId: number) => CompleteQuestResult | null;
   spendStatPoint: (stat: StatKey) => void;
+  allocateStatPoints: (allocations: Partial<Record<StatKey, number>>) => void;
   refresh: () => void;
   refreshToday: () => void;
 };
@@ -158,6 +160,13 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const character = get().character;
     if (!character) return;
     const updated = dbSpendStatPoint(character.id, stat);
+    set({ character: updated });
+  },
+
+  allocateStatPoints: (allocations) => {
+    const character = get().character;
+    if (!character) return;
+    const updated = dbAllocateStatPoints(character.id, allocations);
     set({ character: updated });
   },
 }));

@@ -106,6 +106,62 @@ export function spendStatPoint(characterId: number, stat: StatKey): Character {
   return refreshed;
 }
 
+export function allocateStatPoints(
+  characterId: number,
+  allocations: Partial<Record<StatKey, number>>,
+): Character {
+  let total = 0;
+  for (const [key, value] of Object.entries(allocations)) {
+    if (!STAT_COLUMNS.includes(key as StatKey)) {
+      throw new Error(`Invalid stat key: ${key}`);
+    }
+    if (value === undefined || value === null) continue;
+    if (!Number.isInteger(value) || value < 0) {
+      throw new Error(`Invalid allocation for ${key}: ${value}`);
+    }
+    total += value;
+  }
+  if (total === 0) {
+    const row = getCharacter();
+    if (!row) throw new Error("Character not found");
+    return row;
+  }
+
+  const db = getDb();
+  db.withTransactionSync(() => {
+    const row = db.getFirstSync<{ unspent_stat_points: number }>(
+      "SELECT unspent_stat_points FROM character WHERE id = ?;",
+      [characterId],
+    );
+    if (!row || row.unspent_stat_points < total) {
+      throw new Error("스탯 포인트가 부족합니다");
+    }
+    for (const [key, value] of Object.entries(allocations)) {
+      if (!value || value <= 0) continue;
+      const stat = key as StatKey;
+      db.runSync(
+        `UPDATE character SET ${stat} = ${stat} + ? WHERE id = ?;`,
+        [value, characterId],
+      );
+    }
+    db.runSync(
+      `UPDATE character
+         SET unspent_stat_points = unspent_stat_points - ?
+       WHERE id = ?;`,
+      [total, characterId],
+    );
+  });
+
+  const refreshed = db.getFirstSync<Character>(
+    "SELECT * FROM character WHERE id = ?;",
+    [characterId],
+  );
+  if (!refreshed) {
+    throw new Error("Character disappeared after stat update");
+  }
+  return refreshed;
+}
+
 export function deleteCharacter(id: number): void {
   const db = getDb();
   db.runSync("DELETE FROM character WHERE id = ?;", [id]);
