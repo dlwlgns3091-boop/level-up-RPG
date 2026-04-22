@@ -11,9 +11,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     hydrate();
-    configureNotificationSystem().catch(() => {
-      // 알림 설정 실패는 앱 사용을 막지 않는다
-    });
+    // 동기 throw까지 방어 — Expo Go Android에서 알림 모듈 로드가 터져도
+    // 앱 부팅이 막히지 않도록.
+    try {
+      configureNotificationSystem().catch((e) => {
+        if (__DEV__) console.log("[notifications] init rejected:", e);
+      });
+    } catch (e) {
+      if (__DEV__) console.log("[notifications] init threw sync:", e);
+    }
   }, [hydrate]);
 
   return (

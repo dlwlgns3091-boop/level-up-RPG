@@ -15,6 +15,8 @@ import {
   getScheduledReminderTime,
   hasNotificationPermission,
   isDailyReminderScheduled,
+  NOTIFICATIONS_DISABLED_REASON,
+  NOTIFICATIONS_SUPPORTED,
   requestNotificationPermission,
   scheduleDailyReminder,
 } from "@/lib/notifications";
@@ -193,11 +195,17 @@ export default function Profile() {
             <Switch
               value={reminderOn}
               onValueChange={toggleReminder}
-              disabled={busy}
+              disabled={busy || !NOTIFICATIONS_SUPPORTED}
               trackColor={{ false: COLORS.bgSofter, true: COLORS.goldDark }}
               thumbColor={reminderOn ? COLORS.gold : COLORS.textMuted}
             />
           </View>
+
+          {NOTIFICATIONS_DISABLED_REASON ? (
+            <Text className="mt-2 text-[11px] text-text-muted">
+              {NOTIFICATIONS_DISABLED_REASON}
+            </Text>
+          ) : null}
 
           {reminderOn ? (
             <View className="mt-3">
