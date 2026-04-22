@@ -1,4 +1,5 @@
-import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,12 +15,23 @@ export default function Home() {
   const streak = useCharacterStore((s) => s.streak);
   const todayQuests = useCharacterStore((s) => s.todayQuests);
   const completeQuest = useCharacterStore((s) => s.completeQuest);
+  const refreshForNewDay = useCharacterStore((s) => s.refreshForNewDay);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshForNewDay();
+    }, [refreshForNewDay]),
+  );
 
   const onToggleQuest = useCallback(
     (templateId: number, alreadyDone: boolean) => {
       if (alreadyDone) return;
       const result = completeQuest(templateId);
-      if (result && result.levelsGained > 0) {
+      if (!result) return;
+      if (result.levelsGained > 0) {
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Success,
+        ).catch(() => undefined);
         router.push({
           pathname: "/modals/level-up",
           params: {
@@ -27,6 +39,10 @@ export default function Home() {
             points: String(result.levelsGained * 3),
           },
         });
+      } else {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
+          () => undefined,
+        );
       }
     },
     [completeQuest, router],

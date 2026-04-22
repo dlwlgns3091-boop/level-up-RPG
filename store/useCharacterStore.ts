@@ -13,7 +13,7 @@ import {
   listTodayQuests,
   type TodayQuest,
 } from "@/db/daily";
-import { initDb } from "@/db/init";
+import { initDb, resetAllData } from "@/db/init";
 import {
   applyXpGain,
   isClassSpecialty,
@@ -51,6 +51,8 @@ type CharacterState = {
   allocateStatPoints: (allocations: Partial<Record<StatKey, number>>) => void;
   refresh: () => void;
   refreshToday: () => void;
+  refreshForNewDay: () => void;
+  resetAll: () => void;
 };
 
 export const useCharacterStore = create<CharacterState>((set, get) => ({
@@ -101,6 +103,21 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     if (!character) return;
     ensureTodaySelection(character);
     set({ todayQuests: listTodayQuests() });
+  },
+
+  /**
+   * 앱이 열린 채로 자정을 넘긴 경우에 호출. 오늘의 퀘스트를 재계산하고
+   * 스트릭이 끊어졌다면 current_streak을 0으로 리셋한다.
+   */
+  refreshForNewDay: () => {
+    const character = get().character;
+    const streak = reconcileStreak();
+    if (character) {
+      ensureTodaySelection(character);
+      set({ streak, todayQuests: listTodayQuests() });
+    } else {
+      set({ streak });
+    }
   },
 
   completeQuest: (templateId) => {
@@ -169,6 +186,16 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     if (!character) return;
     const updated = dbAllocateStatPoints(character.id, allocations);
     set({ character: updated });
+  },
+
+  resetAll: () => {
+    resetAllData();
+    set({
+      character: null,
+      streak: getStreak(),
+      todayQuests: [],
+      lastError: null,
+    });
   },
 }));
 

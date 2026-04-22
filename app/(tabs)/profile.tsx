@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PrimaryButton } from "@/components/PrimaryButton";
 import { CLASSES } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
@@ -21,8 +22,10 @@ import { useCharacterStore } from "@/store/useCharacterStore";
 const HOUR_OPTIONS = [7, 8, 9, 12, 20, 22] as const;
 
 export default function Profile() {
+  const router = useRouter();
   const character = useCharacterStore((s) => s.character);
   const streak = useCharacterStore((s) => s.streak);
+  const resetAll = useCharacterStore((s) => s.resetAll);
 
   const [reminderOn, setReminderOn] = useState<boolean>(false);
   const [reminderHour, setReminderHour] = useState<number>(
@@ -201,6 +204,31 @@ export default function Profile() {
             <Text className="text-xs text-text-muted">추후 업데이트 예정</Text>
           </Row>
         </Section>
+
+        <View className="mt-2">
+          <PrimaryButton
+            label="모든 데이터 초기화"
+            variant="secondary"
+            onPress={() => {
+              Alert.alert(
+                "모든 데이터 초기화",
+                "캐릭터, 퀘스트 기록, 커스텀 퀘스트, 스트릭이 모두 삭제됩니다. 되돌릴 수 없습니다.",
+                [
+                  { text: STRINGS.common.cancel, style: "cancel" },
+                  {
+                    text: "초기화",
+                    style: "destructive",
+                    onPress: async () => {
+                      await cancelDailyReminder().catch(() => undefined);
+                      resetAll();
+                      router.replace("/onboarding/welcome");
+                    },
+                  },
+                ],
+              );
+            }}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
