@@ -21,13 +21,12 @@ module.exports = {
           DEFAULT: "#F8FAFC",
           muted: "#94A3B8",
         },
-        stat: {
-          str: "#EF4444",
-          int: "#3B82F6",
-          wis: "#A855F7",
-          dex: "#10B981",
-          con: "#F97316",
-          cha: "#EC4899",
+        danger: "#EF4444",
+        category: {
+          exercise: "#EF4444",
+          study: "#3B82F6",
+          creative: "#A855F7",
+          productivity: "#10B981",
         },
       },
       fontFamily: {

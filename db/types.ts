@@ -1,21 +1,19 @@
-import type { ClassKey, StatKey } from "@/constants/theme";
+import type { CategoryKey } from "@/constants/categories";
+import type { ClassId } from "@/constants/classes";
 
 export type QuestType = "daily" | "weekly" | "custom";
 
 export type Character = {
   id: number;
   name: string;
-  class: ClassKey;
+  current_class_id: ClassId;
   level: number;
   current_xp: number;
   gold: number;
-  str: number;
-  int: number;
-  wis: number;
-  dex: number;
-  con: number;
-  cha: number;
-  unspent_stat_points: number;
+  exercise_xp: number;
+  study_xp: number;
+  creative_xp: number;
+  productivity_xp: number;
   created_at: string;
 };
 
@@ -24,7 +22,7 @@ export type QuestTemplate = {
   title: string;
   description: string | null;
   quest_type: QuestType;
-  target_stat: StatKey;
+  category: CategoryKey;
   xp_reward: number;
   repeat_pattern: string | null;
   is_custom: 0 | 1;
@@ -36,7 +34,7 @@ export type QuestLog = {
   template_id: number;
   completed_at: string;
   xp_gained: number;
-  stat_gained: StatKey;
+  category_gained: CategoryKey;
   streak_multiplier: number;
 };
 
@@ -55,16 +53,33 @@ export type Title = {
   is_equipped: 0 | 1;
 };
 
+export type ClassHistoryEntry = {
+  id: number;
+  class_id: ClassId;
+  changed_at: string;
+  level_at_change: number;
+  reason: "initial" | "awakening" | "transition";
+};
+
+export type Achievement = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  unlocked_at: string | null;
+  progress: number;
+  target: number | null;
+};
+
 export type NewCharacterInput = {
   name: string;
-  class: ClassKey;
 };
 
 export type NewQuestTemplateInput = {
   title: string;
   description?: string | null;
   quest_type: QuestType;
-  target_stat: StatKey;
+  category: CategoryKey;
   xp_reward: number;
   repeat_pattern?: string | null;
   is_custom?: boolean;

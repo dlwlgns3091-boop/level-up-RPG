@@ -1,4 +1,4 @@
-import type { StatKey } from "@/constants/theme";
+import type { CategoryKey } from "@/constants/categories";
 import { getDb } from "./client";
 import type {
   NewQuestTemplateInput,
@@ -28,12 +28,14 @@ export function listActiveTemplates(filter?: {
   );
 }
 
-export function listTemplatesByStat(stat: StatKey): QuestTemplate[] {
+export function listTemplatesByCategory(
+  category: CategoryKey,
+): QuestTemplate[] {
   const db = getDb();
   return db.getAllSync<QuestTemplate>(
     `SELECT * FROM quest_template
-       WHERE is_active = 1 AND quest_type = 'daily' AND target_stat = ?;`,
-    [stat],
+       WHERE is_active = 1 AND quest_type = 'daily' AND category = ?;`,
+    [category],
   );
 }
 
@@ -51,13 +53,13 @@ export function createTemplate(input: NewQuestTemplateInput): QuestTemplate {
   const db = getDb();
   const result = db.runSync(
     `INSERT INTO quest_template
-       (title, description, quest_type, target_stat, xp_reward, repeat_pattern, is_custom, is_active)
+       (title, description, quest_type, category, xp_reward, repeat_pattern, is_custom, is_active)
      VALUES (?, ?, ?, ?, ?, ?, ?, 1);`,
     [
       input.title,
       input.description ?? null,
       input.quest_type,
-      input.target_stat,
+      input.category,
       input.xp_reward,
       input.repeat_pattern ?? null,
       input.is_custom ? 1 : 0,
@@ -77,7 +79,7 @@ export function deactivateTemplate(id: number): void {
 export function insertQuestLog(input: {
   template_id: number;
   xp_gained: number;
-  stat_gained: StatKey;
+  category_gained: CategoryKey;
   streak_multiplier: number;
   completed_at?: string;
 }): QuestLog {
@@ -85,13 +87,13 @@ export function insertQuestLog(input: {
   const completedAt = input.completed_at ?? new Date().toISOString();
   const result = db.runSync(
     `INSERT INTO quest_log
-       (template_id, completed_at, xp_gained, stat_gained, streak_multiplier)
+       (template_id, completed_at, xp_gained, category_gained, streak_multiplier)
      VALUES (?, ?, ?, ?, ?);`,
     [
       input.template_id,
       completedAt,
       input.xp_gained,
-      input.stat_gained,
+      input.category_gained,
       input.streak_multiplier,
     ],
   );
@@ -106,7 +108,6 @@ export function insertQuestLog(input: {
 
 /**
  * 한국 표준시(KST, UTC+9) 기준 "오늘"의 시작/끝 ISO 문자열을 반환한다.
- * 자정 리셋이 사용자 직관과 어긋나지 않도록 로컬 환경 대신 KST를 고정 사용.
  */
 export function getKstDayBounds(now: Date = new Date()): {
   start: string;
@@ -120,14 +121,13 @@ export function getKstDayBounds(now: Date = new Date()): {
   const d = kstNow.getUTCDate();
   const startKstAsUtc = Date.UTC(y, m, d, 0, 0, 0, 0);
   const start = new Date(startKstAsUtc - kstOffsetMs).toISOString();
-  const end = new Date(startKstAsUtc - kstOffsetMs + 24 * 60 * 60 * 1000).toISOString();
+  const end = new Date(
+    startKstAsUtc - kstOffsetMs + 24 * 60 * 60 * 1000,
+  ).toISOString();
   const dateKey = `${y.toString().padStart(4, "0")}-${(m + 1).toString().padStart(2, "0")}-${d.toString().padStart(2, "0")}`;
   return { start, end, dateKey };
 }
 
-/**
- * KST 기준 이번 주(월~일)의 시작/끝.
- */
 export function getKstWeekBounds(now: Date = new Date()): {
   start: string;
   end: string;
@@ -138,9 +138,8 @@ export function getKstWeekBounds(now: Date = new Date()): {
   const m = kstNow.getUTCMonth();
   const d = kstNow.getUTCDate();
   const todayUtc = Date.UTC(y, m, d);
-  // getUTCDay(): 0=Sun, 1=Mon, ..., 6=Sat
   const dow = new Date(todayUtc).getUTCDay();
-  const daysSinceMonday = (dow + 6) % 7; // Monday -> 0, Sunday -> 6
+  const daysSinceMonday = (dow + 6) % 7;
   const mondayUtc = todayUtc - daysSinceMonday * 24 * 60 * 60 * 1000;
   const start = new Date(mondayUtc - kstOffsetMs).toISOString();
   const end = new Date(

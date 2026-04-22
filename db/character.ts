@@ -1,15 +1,14 @@
-import type { StatKey } from "@/constants/theme";
+import type { CategoryKey } from "@/constants/categories";
+import type { ClassId } from "@/constants/classes";
 import { getDb } from "./client";
 import type { Character, NewCharacterInput } from "./types";
 
-const STAT_COLUMNS: readonly StatKey[] = [
-  "str",
-  "int",
-  "wis",
-  "dex",
-  "con",
-  "cha",
-] as const;
+const CATEGORY_COLUMN: Readonly<Record<CategoryKey, keyof Character>> = {
+  exercise: "exercise_xp",
+  study: "study_xp",
+  creative: "creative_xp",
+  productivity: "productivity_xp",
+};
 
 export function getCharacter(): Character | null {
   const db = getDb();
@@ -23,18 +22,16 @@ export function createCharacter(input: NewCharacterInput): Character {
   const db = getDb();
   const createdAt = new Date().toISOString();
   const result = db.runSync(
-    `INSERT INTO character (name, class, created_at)
-     VALUES (?, ?, ?);`,
-    [input.name, input.class, createdAt],
+    `INSERT INTO character (name, current_class_id, created_at)
+     VALUES (?, 'apprentice', ?);`,
+    [input.name, createdAt],
   );
   const id = Number(result.lastInsertRowId);
   const row = db.getFirstSync<Character>(
     "SELECT * FROM character WHERE id = ?;",
     [id],
   );
-  if (!row) {
-    throw new Error("Failed to create character");
-  }
+  if (!row) throw new Error("Failed to create character");
   return row;
 }
 
@@ -42,124 +39,36 @@ export function updateCharacterProgress(params: {
   id: number;
   level: number;
   current_xp: number;
-  unspent_stat_points: number;
   gold: number;
 }): void {
   const db = getDb();
   db.runSync(
     `UPDATE character
-       SET level = ?, current_xp = ?, unspent_stat_points = ?, gold = ?
+       SET level = ?, current_xp = ?, gold = ?
      WHERE id = ?;`,
-    [
-      params.level,
-      params.current_xp,
-      params.unspent_stat_points,
-      params.gold,
-      params.id,
-    ],
+    [params.level, params.current_xp, params.gold, params.id],
   );
 }
 
-export function incrementStat(
+export function incrementCategoryXp(
   characterId: number,
-  stat: StatKey,
+  category: CategoryKey,
   delta: number,
 ): void {
-  if (!STAT_COLUMNS.includes(stat)) {
-    throw new Error(`Invalid stat key: ${stat}`);
-  }
+  const column = CATEGORY_COLUMN[category];
   const db = getDb();
   db.runSync(
-    `UPDATE character SET ${stat} = ${stat} + ? WHERE id = ?;`,
+    `UPDATE character SET ${column} = ${column} + ? WHERE id = ?;`,
     [delta, characterId],
   );
 }
 
-export function spendStatPoint(characterId: number, stat: StatKey): Character {
-  if (!STAT_COLUMNS.includes(stat)) {
-    throw new Error(`Invalid stat key: ${stat}`);
-  }
+export function setCurrentClass(characterId: number, classId: ClassId): void {
   const db = getDb();
-  db.withTransactionSync(() => {
-    const row = db.getFirstSync<{ unspent_stat_points: number }>(
-      "SELECT unspent_stat_points FROM character WHERE id = ?;",
-      [characterId],
-    );
-    if (!row || row.unspent_stat_points < 1) {
-      throw new Error("스탯 포인트가 부족합니다");
-    }
-    db.runSync(
-      `UPDATE character
-         SET ${stat} = ${stat} + 1,
-             unspent_stat_points = unspent_stat_points - 1
-       WHERE id = ?;`,
-      [characterId],
-    );
-  });
-  const refreshed = db.getFirstSync<Character>(
-    "SELECT * FROM character WHERE id = ?;",
-    [characterId],
+  db.runSync(
+    "UPDATE character SET current_class_id = ? WHERE id = ?;",
+    [classId, characterId],
   );
-  if (!refreshed) {
-    throw new Error("Character disappeared after stat update");
-  }
-  return refreshed;
-}
-
-export function allocateStatPoints(
-  characterId: number,
-  allocations: Partial<Record<StatKey, number>>,
-): Character {
-  let total = 0;
-  for (const [key, value] of Object.entries(allocations)) {
-    if (!STAT_COLUMNS.includes(key as StatKey)) {
-      throw new Error(`Invalid stat key: ${key}`);
-    }
-    if (value === undefined || value === null) continue;
-    if (!Number.isInteger(value) || value < 0) {
-      throw new Error(`Invalid allocation for ${key}: ${value}`);
-    }
-    total += value;
-  }
-  if (total === 0) {
-    const row = getCharacter();
-    if (!row) throw new Error("Character not found");
-    return row;
-  }
-
-  const db = getDb();
-  db.withTransactionSync(() => {
-    const row = db.getFirstSync<{ unspent_stat_points: number }>(
-      "SELECT unspent_stat_points FROM character WHERE id = ?;",
-      [characterId],
-    );
-    if (!row || row.unspent_stat_points < total) {
-      throw new Error("스탯 포인트가 부족합니다");
-    }
-    for (const [key, value] of Object.entries(allocations)) {
-      if (!value || value <= 0) continue;
-      const stat = key as StatKey;
-      db.runSync(
-        `UPDATE character SET ${stat} = ${stat} + ? WHERE id = ?;`,
-        [value, characterId],
-      );
-    }
-    db.runSync(
-      `UPDATE character
-         SET unspent_stat_points = unspent_stat_points - ?
-       WHERE id = ?;`,
-      [total, characterId],
-    );
-  });
-
-  const refreshed = db.getFirstSync<Character>(
-    "SELECT * FROM character WHERE id = ?;",
-    [characterId],
-  );
-  if (!refreshed) {
-    throw new Error("Character disappeared after stat update");
-  }
-  return refreshed;
 }
 
 export function deleteCharacter(id: number): void {

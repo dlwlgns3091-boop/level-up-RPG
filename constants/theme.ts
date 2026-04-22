@@ -1,3 +1,5 @@
+import type { CategoryKey } from "./categories";
+
 export const COLORS = {
   bg: "#0F172A",
   bgSoft: "#1E293B",
@@ -6,22 +8,13 @@ export const COLORS = {
   goldDark: "#B45309",
   text: "#F8FAFC",
   textMuted: "#94A3B8",
-  stat: {
-    str: "#EF4444",
-    int: "#3B82F6",
-    wis: "#A855F7",
-    dex: "#10B981",
-    con: "#F97316",
-    cha: "#EC4899",
-  },
+  danger: "#EF4444",
+  category: {
+    exercise: "#EF4444",
+    study: "#3B82F6",
+    creative: "#A855F7",
+    productivity: "#10B981",
+  } satisfies Record<CategoryKey, string>,
 } as const;
 
-export type StatKey = "str" | "int" | "wis" | "dex" | "con" | "cha";
-
-export type ClassKey =
-  | "warrior"
-  | "sage"
-  | "monk"
-  | "bard"
-  | "rogue"
-  | "cleric";
+export type { CategoryKey } from "./categories";

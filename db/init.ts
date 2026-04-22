@@ -24,6 +24,8 @@ export function resetAllData(): void {
       DELETE FROM title;
       DELETE FROM quest_template;
       DELETE FROM character;
+      DELETE FROM class_history;
+      DELETE FROM achievement;
       UPDATE streak
          SET current_streak = 0,
              longest_streak = 0,
@@ -31,6 +33,5 @@ export function resetAllData(): void {
        WHERE id = 1;
     `);
   });
-  // 템플릿을 전부 지웠으므로 다시 씨드.
   seedDefaultTemplatesIfNeeded();
 }
