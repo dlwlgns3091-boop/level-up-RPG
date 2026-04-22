@@ -1,9 +1,17 @@
 import "../global.css";
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function RootLayout() {
+  const hydrate = useCharacterStore((s) => s.hydrate);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
