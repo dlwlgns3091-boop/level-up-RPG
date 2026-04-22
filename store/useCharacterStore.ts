@@ -24,6 +24,7 @@ import {
   bumpStreakForToday,
   calculateStreakBonus,
   getStreak,
+  reconcileStreak,
 } from "@/db/streak";
 import type { Character, Streak } from "@/db/types";
 
@@ -63,7 +64,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     try {
       initDb();
       const character = dbGetCharacter();
-      const streak = getStreak();
+      const streak = reconcileStreak();
       if (character) {
         ensureTodaySelection(character);
       }

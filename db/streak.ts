@@ -16,6 +16,38 @@ export function calculateStreakBonus(streak: Streak): number {
   return Math.min(raw, 2);
 }
 
+function dayKeyOffset(dateKey: string, deltaDays: number): string {
+  const parts = dateKey.split("-").map((n) => Number(n));
+  const y = parts[0] ?? 1970;
+  const m = parts[1] ?? 1;
+  const d = parts[2] ?? 1;
+  const t = Date.UTC(y, m - 1, d) + deltaDays * 24 * 60 * 60 * 1000;
+  const dt = new Date(t);
+  return `${dt.getUTCFullYear().toString().padStart(4, "0")}-${(dt.getUTCMonth() + 1).toString().padStart(2, "0")}-${dt.getUTCDate().toString().padStart(2, "0")}`;
+}
+
+/**
+ * 앱 시작 시 호출. 마지막 완료일이 어제보다 오래되었으면 current_streak을 0으로 리셋.
+ * (longest_streak은 유지)
+ */
+export function reconcileStreak(): Streak {
+  const current = getStreak();
+  if (!current.last_completed_date || current.current_streak === 0) {
+    return current;
+  }
+  const { dateKey: todayKey } = getKstDayBounds();
+  const yesterdayKey = dayKeyOffset(todayKey, -1);
+  if (
+    current.last_completed_date === todayKey ||
+    current.last_completed_date === yesterdayKey
+  ) {
+    return current;
+  }
+  const db = getDb();
+  db.runSync("UPDATE streak SET current_streak = 0 WHERE id = 1;");
+  return { ...current, current_streak: 0 };
+}
+
 /**
  * 오늘 첫 퀘스트 완료 시 호출. 어제 완료가 있었으면 +1, 없었으면 1로 리셋.
  * 같은 날 두 번째 이후 호출은 noop.
@@ -29,15 +61,7 @@ export function bumpStreakForToday(): Streak {
     return current;
   }
 
-  const yesterdayKey = (() => {
-    const [y, m, d] = dateKey.split("-").map((n) => Number(n));
-    const yy = y ?? 1970;
-    const mm = m ?? 1;
-    const dd = d ?? 1;
-    const t = Date.UTC(yy, mm - 1, dd) - 24 * 60 * 60 * 1000;
-    const dt = new Date(t);
-    return `${dt.getUTCFullYear().toString().padStart(4, "0")}-${(dt.getUTCMonth() + 1).toString().padStart(2, "0")}-${dt.getUTCDate().toString().padStart(2, "0")}`;
-  })();
+  const yesterdayKey = dayKeyOffset(dateKey, -1);
 
   const next =
     current.last_completed_date === yesterdayKey ? current.current_streak + 1 : 1;
@@ -57,3 +81,4 @@ export function bumpStreakForToday(): Streak {
     last_completed_date: dateKey,
   };
 }
+

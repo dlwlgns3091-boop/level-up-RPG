@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { configureNotificationSystem } from "@/lib/notifications";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function RootLayout() {
@@ -10,6 +11,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     hydrate();
+    configureNotificationSystem().catch(() => {
+      // 알림 설정 실패는 앱 사용을 막지 않는다
+    });
   }, [hydrate]);
 
   return (
