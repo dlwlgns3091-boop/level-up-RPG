@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -7,6 +6,7 @@ import { CharacterCard } from "@/components/CharacterCard";
 import { QuestRow } from "@/components/QuestRow";
 import { StreakBadge } from "@/components/StreakBadge";
 import { STRINGS } from "@/constants/strings.ko";
+import { successFeedback, tapFeedback } from "@/lib/haptic";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function Home() {
@@ -28,10 +28,14 @@ export default function Home() {
       if (alreadyDone) return;
       const result = completeQuest(templateId);
       if (!result) return;
+      if (__DEV__) {
+        console.log("[haptic] quest completed", {
+          templateId,
+          levelsGained: result.levelsGained,
+        });
+      }
       if (result.levelsGained > 0) {
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        ).catch(() => undefined);
+        successFeedback().catch(() => undefined);
         router.push({
           pathname: "/modals/level-up",
           params: {
@@ -40,9 +44,7 @@ export default function Home() {
           },
         });
       } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
-          () => undefined,
-        );
+        tapFeedback().catch(() => undefined);
       }
     },
     [completeQuest, router],

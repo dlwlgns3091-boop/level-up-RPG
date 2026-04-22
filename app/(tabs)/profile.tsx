@@ -3,7 +3,6 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { CLASSES } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
@@ -97,11 +96,15 @@ export default function Profile() {
     ? CLASSES.find((c) => c.key === character.class) ?? null
     : null;
 
+  if (__DEV__) {
+    console.log("[profile] rendering, reset button JSX is present");
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top", "left", "right"]}>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
       >
         <Text className="mb-4 text-2xl font-bold text-gold">
           {STRINGS.profile.title}
@@ -205,10 +208,11 @@ export default function Profile() {
           </Row>
         </Section>
 
-        <View className="mt-2">
-          <PrimaryButton
-            label="모든 데이터 초기화"
-            variant="secondary"
+        <View className="mt-4">
+          <Text className="mb-2 text-sm font-semibold text-text-muted">
+            위험한 작업
+          </Text>
+          <Pressable
             onPress={() => {
               Alert.alert(
                 "모든 데이터 초기화",
@@ -227,7 +231,13 @@ export default function Profile() {
                 ],
               );
             }}
-          />
+            className="flex-row items-center justify-center rounded-2xl border border-red-500 bg-bg-soft p-4 active:opacity-80"
+          >
+            <Ionicons name="trash" size={18} color="#EF4444" />
+            <Text className="ml-2 text-base font-bold text-red-500">
+              모든 데이터 초기화
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>

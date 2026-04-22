@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
+import { successFeedback, tapFeedback } from "@/lib/haptic";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { QuestRow } from "@/components/QuestRow";
@@ -71,10 +71,14 @@ export default function Quests() {
     (templateId: number) => {
       const result = completeQuest(templateId);
       if (!result) return;
+      if (__DEV__) {
+        console.log("[haptic] quest completed (tab)", {
+          templateId,
+          levelsGained: result.levelsGained,
+        });
+      }
       if (result.levelsGained > 0) {
-        Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success,
-        ).catch(() => undefined);
+        successFeedback().catch(() => undefined);
         router.push({
           pathname: "/modals/level-up",
           params: {
@@ -83,9 +87,7 @@ export default function Quests() {
           },
         });
       } else {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
-          () => undefined,
-        );
+        tapFeedback().catch(() => undefined);
       }
       // 완료 후 해당 탭 리스트 재조회 (완료 수 카운트 반영)
       loadWeekly();
