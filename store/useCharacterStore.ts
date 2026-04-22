@@ -7,6 +7,11 @@ import {
   spendStatPoint as dbSpendStatPoint,
   updateCharacterProgress as dbUpdateCharacterProgress,
 } from "@/db/character";
+import {
+  ensureTodaySelection,
+  listTodayQuests,
+  type TodayQuest,
+} from "@/db/daily";
 import { initDb } from "@/db/init";
 import {
   applyXpGain,
@@ -33,6 +38,7 @@ export type CompleteQuestResult = {
 type CharacterState = {
   character: Character | null;
   streak: Streak | null;
+  todayQuests: TodayQuest[];
   isReady: boolean;
   lastError: string | null;
 
@@ -41,11 +47,13 @@ type CharacterState = {
   completeQuest: (templateId: number) => CompleteQuestResult | null;
   spendStatPoint: (stat: StatKey) => void;
   refresh: () => void;
+  refreshToday: () => void;
 };
 
 export const useCharacterStore = create<CharacterState>((set, get) => ({
   character: null,
   streak: null,
+  todayQuests: [],
   isReady: false,
   lastError: null,
 
@@ -54,7 +62,17 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       initDb();
       const character = dbGetCharacter();
       const streak = getStreak();
-      set({ character, streak, isReady: true, lastError: null });
+      if (character) {
+        ensureTodaySelection(character);
+      }
+      const todayQuests = character ? listTodayQuests() : [];
+      set({
+        character,
+        streak,
+        todayQuests,
+        isReady: true,
+        lastError: null,
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       set({ isReady: true, lastError: msg });
@@ -63,7 +81,9 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   createCharacter: (input) => {
     const character = dbCreateCharacter(input);
-    set({ character });
+    ensureTodaySelection(character);
+    const todayQuests = listTodayQuests();
+    set({ character, todayQuests });
     return character;
   },
 
@@ -71,6 +91,13 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const character = dbGetCharacter();
     const streak = getStreak();
     set({ character, streak });
+  },
+
+  refreshToday: () => {
+    const character = get().character;
+    if (!character) return;
+    ensureTodaySelection(character);
+    set({ todayQuests: listTodayQuests() });
   },
 
   completeQuest: (templateId) => {
@@ -114,7 +141,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     const newStreak = bumpStreakForToday();
 
     const refreshed = dbGetCharacter();
-    set({ character: refreshed, streak: newStreak });
+    const todayQuests = listTodayQuests();
+    set({ character: refreshed, streak: newStreak, todayQuests });
 
     return {
       xpGained,

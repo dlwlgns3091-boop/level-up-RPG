@@ -59,6 +59,18 @@ CREATE TABLE IF NOT EXISTS title (
   unlocked_at TEXT NOT NULL,
   is_equipped INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS daily_quest (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date_key TEXT NOT NULL,
+  slot INTEGER NOT NULL,
+  template_id INTEGER NOT NULL,
+  UNIQUE(date_key, slot),
+  FOREIGN KEY (template_id) REFERENCES quest_template(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_quest_date_key
+  ON daily_quest(date_key);
 `;
 
 export function migrate(): void {
