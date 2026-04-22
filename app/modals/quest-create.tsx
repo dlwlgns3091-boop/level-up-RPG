@@ -12,20 +12,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { STAT_LABELS_KO } from "@/constants/classes";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS_KO,
+  type CategoryKey,
+} from "@/constants/categories";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS, type StatKey } from "@/constants/theme";
+import { COLORS } from "@/constants/theme";
 import { createTemplate } from "@/db/quest";
 import type { QuestType } from "@/db/types";
-
-const STAT_OPTIONS: readonly StatKey[] = [
-  "str",
-  "int",
-  "wis",
-  "dex",
-  "con",
-  "cha",
-] as const;
 
 const XP_OPTIONS = [10, 20, 30, 50] as const;
 
@@ -45,7 +40,7 @@ export default function QuestCreate() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [stat, setStat] = useState<StatKey>("str");
+  const [category, setCategory] = useState<CategoryKey>("exercise");
   const [xp, setXp] = useState<number>(20);
   const [frequency, setFrequency] = useState<FrequencyKey>("daily");
   const [submitting, setSubmitting] = useState(false);
@@ -63,7 +58,7 @@ export default function QuestCreate() {
         title: trimmedTitle,
         description: trimmedDesc.length > 0 ? trimmedDesc : null,
         quest_type: questType,
-        target_stat: stat,
+        category,
         xp_reward: xp,
         repeat_pattern: frequency,
         is_custom: true,
@@ -151,26 +146,25 @@ export default function QuestCreate() {
             </View>
           </Field>
 
-          <Field label="연관 스탯">
+          <Field label="카테고리">
             <View className="flex-row flex-wrap">
-              {STAT_OPTIONS.map((s) => {
-                const active = s === stat;
-                const color = COLORS.stat[s];
+              {CATEGORIES.map((c) => {
+                const active = c.key === category;
                 return (
                   <Pressable
-                    key={s}
-                    onPress={() => setStat(s)}
+                    key={c.key}
+                    onPress={() => setCategory(c.key)}
                     className="mb-2 mr-2 rounded-full border px-3 py-2"
                     style={{
-                      borderColor: active ? color : COLORS.bgSofter,
-                      backgroundColor: active ? `${color}33` : COLORS.bgSoft,
+                      borderColor: active ? c.color : COLORS.bgSofter,
+                      backgroundColor: active ? `${c.color}33` : COLORS.bgSoft,
                     }}
                   >
                     <Text
                       className="text-xs font-semibold"
-                      style={{ color: active ? color : COLORS.textMuted }}
+                      style={{ color: active ? c.color : COLORS.textMuted }}
                     >
-                      {STAT_LABELS_KO[s]}
+                      {c.emoji} {CATEGORY_LABELS_KO[c.key]}
                     </Text>
                   </Pressable>
                 );

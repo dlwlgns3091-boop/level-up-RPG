@@ -36,7 +36,7 @@ export default function Welcome() {
         <View className="w-full">
           <PrimaryButton
             label={STRINGS.onboarding.welcomeCta}
-            onPress={() => router.push("/onboarding/class-select")}
+            onPress={() => router.push("/onboarding/character-create")}
           />
         </View>
       </View>

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
-import { CLASSES, STAT_LABELS_KO } from "@/constants/classes";
+import { getClass } from "@/constants/classes";
 import { COLORS } from "@/constants/theme";
 import { xpForNextLevel } from "@/db/leveling";
 import type { Character } from "@/db/types";
@@ -10,19 +10,8 @@ type Props = {
   character: Character;
 };
 
-const ICON_BY_CLASS = {
-  warrior: "barbell",
-  sage: "book",
-  monk: "leaf",
-  bard: "musical-notes",
-  rogue: "flash",
-  cleric: "heart",
-} as const;
-
 export function CharacterCard({ character }: Props) {
-  const def = CLASSES.find((c) => c.key === character.class);
-  const mainStat = def?.mainStat ?? "str";
-  const accent = COLORS.stat[mainStat];
+  const def = getClass(character.current_class_id);
   const need = xpForNextLevel(character.level);
   const ratio = Math.min(1, character.current_xp / need);
 
@@ -31,25 +20,20 @@ export function CharacterCard({ character }: Props) {
       <View className="flex-row items-center">
         <View
           className="mr-4 h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ backgroundColor: `${accent}33` }}
+          style={{ backgroundColor: `${COLORS.gold}33` }}
         >
-          <Ionicons
-            name={ICON_BY_CLASS[character.class]}
-            size={32}
-            color={accent}
-          />
+          <Ionicons name="person" size={32} color={COLORS.gold} />
         </View>
 
         <View className="flex-1">
           <Text className="text-lg font-bold text-text">
             {character.name}
-            <Text className="text-text-muted">
-              {" the "}
-              {def?.nameKo ?? ""}
-            </Text>
           </Text>
-          <Text className="text-sm text-text-muted">
-            Lv.{character.level} · 주 스탯 {STAT_LABELS_KO[mainStat]}
+          <Text className="mt-0.5 text-sm font-semibold text-gold">
+            {def.nameKo}
+          </Text>
+          <Text className="mt-0.5 text-xs text-text-muted">
+            Lv.{character.level} · {def.flavor}
           </Text>
         </View>
       </View>

@@ -17,12 +17,11 @@ export const CATEGORIES: readonly CategoryDef[] = [
   { key: "productivity", nameKo: "생산성", emoji: "⚡", color: "#10B981", icon: "flash" },
 ] as const;
 
-export const CATEGORY_BY_KEY: Readonly<Record<CategoryKey, CategoryDef>> = {
-  exercise: CATEGORIES[0],
-  study: CATEGORIES[1],
-  creative: CATEGORIES[2],
-  productivity: CATEGORIES[3],
-};
+export const CATEGORY_BY_KEY: Readonly<Record<CategoryKey, CategoryDef>> =
+  CATEGORIES.reduce<Record<CategoryKey, CategoryDef>>((acc, def) => {
+    acc[def.key] = def;
+    return acc;
+  }, {} as Record<CategoryKey, CategoryDef>);
 
 export const CATEGORY_LABELS_KO: Readonly<Record<CategoryKey, string>> = {
   exercise: "운동",

@@ -2,7 +2,39 @@
 
 자기계발 활동을 RPG 퀘스트로 변환해 캐릭터를 성장시키는 모바일 앱. Expo (React Native) + TypeScript + SQLite 기반 로컬 전용 MVP.
 
-제품 스펙은 [`CLAUDE.md`](./CLAUDE.md) 참고.
+제품 스펙은 [`CLAUDE.md`](./CLAUDE.md) 참고. Phase 8.5 리팩토링 스펙은 별도 문서.
+
+## 시스템 개요 (Phase 8.5)
+
+### 4개 카테고리
+모든 활동은 4개 카테고리 중 하나로 분류된다.
+
+| 키 | 한글 | 색상 | 예시 |
+|---|---|---|---|
+| `exercise` | 운동 🏋️ | 빨강 | 헬스, 런닝, 스트레칭, 충분한 수면 |
+| `study` | 공부 📚 | 파랑 | 독서, 강의, 언어 학습, 회고 |
+| `creative` | 창작 🎨 | 보라 | 글·그림·코드·음악 작업, 일기 |
+| `productivity` | 생산성 ⚡ | 초록 | 할 일 처리, 포모도로, 정리 |
+
+### 자동 직업 시스템
+직업은 **선택하지 않는다**. 누적 카테고리 XP의 비율을 기준으로 자동 결정되며, 매 레벨업마다 재평가된다. 16개 직업: 수련생(초기) / 4 순수형 / 6 2중조합 / 4 3중조합 / 퍼펙트 휴먼.
+
+판정 임계값:
+- `total < 50`: 수련생
+- 활동 카테고리 `< 2`: 수련생
+- 1위 비율 `>= 60%`: 해당 카테고리 순수형 (아이언 하트, 도서관의 마왕, 픽셀 마스터, 타임 해커)
+- 4위 비율 `>= 18%`: 퍼펙트 휴먼
+- 3위 `>= 20%` 그리고 4위 `< 12%`: 3중 조합 (르네상스인, 갓생 헌터, 스트리트 아티스트, 디지털 위자드)
+- 그 외: 상위 2개로 2중 조합 결정
+
+전직 시 직전 직업의 주력 카테고리에 5% 보너스를 줘 다시 판정 (Hysteresis) → 경계 근처에서 직업이 자주 바뀌지 않음.
+
+### 일일 퀘스트 자동 생성
+캐릭터의 카테고리 XP 비율을 기준으로 매일 4개를 뽑는다.
+- 비율 1·2위 카테고리에서 각 1개 (주력 강화)
+- 비율 4위 카테고리에서 1개 (약점 보완)
+- 임의 카테고리에서 1개 (다양성)
+
 
 ## 실행 (Windows PowerShell 기준)
 
@@ -54,12 +86,41 @@ npx expo start --dev-client
 ## 디렉토리 구조
 
 ```
-app/               expo-router 화면 (index / onboarding / (tabs) / modals)
-components/        재사용 UI (PrimaryButton, ClassCard, RadarChart, ...)
-constants/         theme.ts, strings.ko.ts, classes.ts — 테마·문자열 상수
-db/                SQLite 클라이언트, 스키마, CRUD, 일일 선정, 레벨링 로직
-lib/               notifications.ts — expo-notifications 래퍼
-store/             Zustand 스토어 (캐릭터, 스트릭, 오늘의 퀘스트)
+app/               expo-router 화면
+  index.tsx          스플래시 → 캐릭터 유무로 분기
+  onboarding/        welcome → character-create → intro
+  (tabs)/            home, quests, stats, profile
+  modals/            quest-detail, quest-create, level-up, class-change
+
+components/        재사용 UI
+  PrimaryButton, SegmentedTabs
+  CharacterCard, XpBar, StreakBadge
+  QuestRow, WeeklyQuestRow
+  DiamondChart      4축 카테고리 차트 (Phase 8.5)
+
+constants/
+  categories.ts     4개 카테고리 메타 (Phase 8.5)
+  classes.ts        16개 직업 메타 (Phase 8.5)
+  theme.ts          COLORS — Tailwind 토큰과 동기화
+  strings.ko.ts     한국어 문자열 단일 소스
+
+types/
+  category.ts       CategoryKey, CategoryXP, pickCategoryXp()
+
+db/                SQLite (expo-sqlite)
+  client, schema (v2)
+  character, quest, daily, streak, classHistory  CRUD
+  leveling          xpForNextLevel + applyXpGain
+  seed              32 daily + 4 weekly 시드
+  init              migrate + resetAllData
+
+lib/
+  classDeterminer.ts  determineClass() with hysteresis (Phase 8.5)
+  notifications.ts    expo-notifications 래퍼
+  haptic.ts           expo-haptics + Vibration 폴백
+
+store/
+  useCharacterStore.ts  Zustand (캐릭터, 스트릭, 오늘의 퀘스트, 직업변경 이벤트)
 ```
 
 ## 테마 교체 (디자인 Phase 대비)

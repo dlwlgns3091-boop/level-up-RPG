@@ -72,9 +72,21 @@ export default function Quests() {
       const result = completeQuest(templateId);
       if (!result) return;
       if (__DEV__) {
-        console.log("[haptic] quest completed (tab)", {
+        console.log("[quests] quest completed", {
           templateId,
           levelsGained: result.levelsGained,
+          classChanged: result.classChange?.next ?? null,
+        });
+      }
+      if (result.classChange) {
+        router.push({
+          pathname: "/modals/class-change",
+          params: {
+            previous: result.classChange.previous,
+            next: result.classChange.next,
+            isAwakening: result.classChange.isAwakening ? "1" : "0",
+            level: String(result.classChange.level),
+          },
         });
       }
       if (result.levelsGained > 0) {
@@ -83,7 +95,7 @@ export default function Quests() {
           pathname: "/modals/level-up",
           params: {
             level: String(result.newLevel),
-            points: String(result.levelsGained * 3),
+            points: String(result.levelsGained),
           },
         });
       } else {

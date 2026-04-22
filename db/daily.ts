@@ -1,22 +1,13 @@
-import { CLASSES } from "@/constants/classes";
-import type { StatKey } from "@/constants/theme";
+import { type CategoryKey } from "@/constants/categories";
+import { CATEGORY_KEYS, pickCategoryXp } from "@/types/category";
 import { getDb } from "./client";
 import {
   countLogsForTemplateBetween,
   getKstDayBounds,
   listActiveTemplates,
-  listTemplatesByStat,
+  listTemplatesByCategory,
 } from "./quest";
 import type { Character, QuestTemplate } from "./types";
-
-const STAT_KEYS: readonly StatKey[] = [
-  "str",
-  "int",
-  "wis",
-  "dex",
-  "con",
-  "cha",
-] as const;
 
 export type TodayQuest = {
   slot: number;
@@ -44,59 +35,63 @@ function shuffleTake<T>(items: readonly T[], n: number): T[] {
   return arr.slice(0, n);
 }
 
-function findWeakestStat(character: Character): StatKey {
-  let weakest: StatKey = "str";
-  let min = character.str;
-  for (const k of STAT_KEYS) {
-    const v = character[k];
-    if (v < min) {
-      min = v;
-      weakest = k;
-    }
-  }
-  return weakest;
-}
-
-function getMainStat(character: Character): StatKey {
-  const def = CLASSES.find((c) => c.key === character.class);
-  return def?.mainStat ?? "str";
+/**
+ * 카테고리 XP 기준으로 정렬. 동률은 안정성 위해 사전식.
+ */
+function rankCategoriesByXp(
+  character: Character,
+): readonly CategoryKey[] {
+  const xp = pickCategoryXp(character);
+  const ranked = [...CATEGORY_KEYS].sort((a, b) => {
+    if (xp[b] !== xp[a]) return xp[b] - xp[a];
+    return a.localeCompare(b);
+  });
+  return ranked;
 }
 
 /**
- * 스펙의 일일 퀘스트 생성 규칙:
- *  - 주력 스탯 퀘스트 2개
- *  - 약점 스탯 퀘스트 1개
- *  - 랜덤 1개 (다양성)
+ * 스펙의 일일 퀘스트 생성 규칙 (카테고리 기반):
+ *  - 비율 높은 2개 카테고리에서 각 1개  (주력)
+ *  - 비율 낮은 1개 카테고리에서 1개      (약점 보완)
+ *  - 임의 카테고리에서 랜덤 1개          (다양성)
+ *
+ * 신규 캐릭터는 모든 카테고리가 0이라 ranked가 사전식 순서가 되며,
+ * 결과적으로 4개 카테고리에서 한 개씩 골고루 뽑힘.
  */
 function pickTodayTemplates(character: Character): QuestTemplate[] {
-  const mainStat = getMainStat(character);
-  const weakestStat = findWeakestStat(character);
+  const ranked = rankCategoriesByXp(character);
+  const top1 = ranked[0];
+  const top2 = ranked[1];
+  const weakest = ranked[3];
+
   const picks: QuestTemplate[] = [];
   const used = new Set<number>();
 
-  const mainPool = listTemplatesByStat(mainStat).filter((t) => !used.has(t.id));
-  for (const t of shuffleTake(mainPool, 2)) {
-    picks.push(t);
-    used.add(t.id);
+  for (const cat of [top1, top2, weakest]) {
+    if (!cat) continue;
+    const pool = listTemplatesByCategory(cat).filter((t) => !used.has(t.id));
+    const choice = pickRandom(pool);
+    if (choice) {
+      picks.push(choice);
+      used.add(choice.id);
+    }
   }
 
-  const weakPool = listTemplatesByStat(weakestStat).filter(
+  const allDailyPool = listActiveTemplates({ questType: "daily" }).filter(
     (t) => !used.has(t.id),
   );
-  const weakPick = pickRandom(weakPool);
-  if (weakPick) {
-    picks.push(weakPick);
-    used.add(weakPick.id);
-  }
-
-  const anyPool = listActiveTemplates({ questType: "daily" }).filter(
-    (t) => !used.has(t.id),
-  );
-  const randomPick = pickRandom(anyPool);
+  const randomPick = pickRandom(allDailyPool);
   if (randomPick) {
     picks.push(randomPick);
     used.add(randomPick.id);
   }
+
+  // 결과 순서를 카테고리 기준으로 정돈해 일관된 표시
+  picks.sort((a, b) => {
+    const ai = CATEGORY_KEYS.indexOf(a.category);
+    const bi = CATEGORY_KEYS.indexOf(b.category);
+    return ai - bi;
+  });
 
   return picks;
 }

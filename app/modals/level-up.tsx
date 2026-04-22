@@ -16,7 +16,7 @@ export default function LevelUp() {
   const router = useRouter();
   const params = useLocalSearchParams<{ level?: string; points?: string }>();
   const level = Number(params.level ?? "1");
-  const points = Number(params.points ?? "3");
+  const levelsGained = Number(params.points ?? "1");
 
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0);
@@ -80,12 +80,11 @@ export default function LevelUp() {
           <Text className="mt-2 text-lg font-semibold text-text">
             Lv.{level} 달성
           </Text>
-          <Text className="mt-1 text-sm text-text-muted">
-            스탯 포인트 {points}개 획득
-          </Text>
-          <Text className="mt-1 text-xs text-text-muted">
-            스탯 탭에서 분배할 수 있습니다
-          </Text>
+          {levelsGained > 1 ? (
+            <Text className="mt-1 text-sm text-text-muted">
+              한 번에 {levelsGained}레벨 상승
+            </Text>
+          ) : null}
         </View>
 
         <View className="mt-8">

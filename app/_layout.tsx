@@ -40,6 +40,10 @@ export default function RootLayout() {
           name="modals/level-up"
           options={{ presentation: "transparentModal", animation: "fade" }}
         />
+        <Stack.Screen
+          name="modals/class-change"
+          options={{ presentation: "transparentModal", animation: "fade" }}
+        />
       </Stack>
     </SafeAreaProvider>
   );

@@ -1,24 +1,21 @@
 import { create } from "zustand";
-import type { ClassKey, StatKey } from "@/constants/theme";
+import type { CategoryKey } from "@/constants/categories";
+import { type ClassId } from "@/constants/classes";
 import {
-  allocateStatPoints as dbAllocateStatPoints,
   createCharacter as dbCreateCharacter,
   getCharacter as dbGetCharacter,
-  incrementStat as dbIncrementStat,
-  spendStatPoint as dbSpendStatPoint,
+  incrementCategoryXp as dbIncrementCategoryXp,
+  setCurrentClass as dbSetCurrentClass,
   updateCharacterProgress as dbUpdateCharacterProgress,
 } from "@/db/character";
+import { insertClassHistory } from "@/db/classHistory";
 import {
   ensureTodaySelection,
   listTodayQuests,
   type TodayQuest,
 } from "@/db/daily";
 import { initDb, resetAllData } from "@/db/init";
-import {
-  applyXpGain,
-  isClassSpecialty,
-  xpForNextLevel,
-} from "@/db/leveling";
+import { applyXpGain, xpForNextLevel } from "@/db/leveling";
 import { getTemplate, insertQuestLog } from "@/db/quest";
 import {
   bumpStreakForToday,
@@ -27,31 +24,41 @@ import {
   reconcileStreak,
 } from "@/db/streak";
 import type { Character, Streak } from "@/db/types";
+import { determineClass } from "@/lib/classDeterminer";
+import { pickCategoryXp } from "@/types/category";
+
+export type ClassChangeEvent = {
+  previous: ClassId;
+  next: ClassId;
+  isAwakening: boolean;
+  level: number;
+};
 
 export type CompleteQuestResult = {
   xpGained: number;
-  statGained: StatKey;
+  category: CategoryKey;
   levelsGained: number;
   newLevel: number;
   streakMultiplier: number;
-  classBonus: number;
+  classChange: ClassChangeEvent | null;
 };
 
 type CharacterState = {
   character: Character | null;
   streak: Streak | null;
   todayQuests: TodayQuest[];
+  /** 직업이 막 바뀌었을 때 UI가 모달을 띄우도록 임시 보관. 표시 후 clear 호출. */
+  pendingClassChange: ClassChangeEvent | null;
   isReady: boolean;
   lastError: string | null;
 
   hydrate: () => void;
-  createCharacter: (input: { name: string; class: ClassKey }) => Character;
+  createCharacter: (input: { name: string }) => Character;
   completeQuest: (templateId: number) => CompleteQuestResult | null;
-  spendStatPoint: (stat: StatKey) => void;
-  allocateStatPoints: (allocations: Partial<Record<StatKey, number>>) => void;
   refresh: () => void;
   refreshToday: () => void;
   refreshForNewDay: () => void;
+  clearPendingClassChange: () => void;
   resetAll: () => void;
 };
 
@@ -59,6 +66,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   character: null,
   streak: null,
   todayQuests: [],
+  pendingClassChange: null,
   isReady: false,
   lastError: null,
 
@@ -86,6 +94,11 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
 
   createCharacter: (input) => {
     const character = dbCreateCharacter(input);
+    insertClassHistory({
+      class_id: "apprentice",
+      level_at_change: character.level,
+      reason: "initial",
+    });
     ensureTodaySelection(character);
     const todayQuests = listTodayQuests();
     set({ character, todayQuests });
@@ -105,10 +118,6 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     set({ todayQuests: listTodayQuests() });
   },
 
-  /**
-   * 앱이 열린 채로 자정을 넘긴 경우에 호출. 오늘의 퀘스트를 재계산하고
-   * 스트릭이 끊어졌다면 current_streak을 0으로 리셋한다.
-   */
   refreshForNewDay: () => {
     const character = get().character;
     const streak = reconcileStreak();
@@ -123,24 +132,16 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
   completeQuest: (templateId) => {
     const character = get().character;
     if (!character) return null;
-
     const template = getTemplate(templateId);
     if (!template) return null;
 
     const streakBefore = getStreak();
     const streakMultiplier = calculateStreakBonus(streakBefore);
-    const classBonus = isClassSpecialty(character.class, template.target_stat)
-      ? 1.5
-      : 1.0;
-    const xpGained = Math.floor(
-      template.xp_reward * streakMultiplier * classBonus,
-    );
-    const statDelta = Math.max(1, Math.floor(xpGained * 0.1));
+    const xpGained = Math.floor(template.xp_reward * streakMultiplier);
 
     const next = applyXpGain({
       level: character.level,
       current_xp: character.current_xp,
-      unspent_stat_points: character.unspent_stat_points,
       xp_to_add: xpGained,
     });
 
@@ -148,45 +149,64 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       id: character.id,
       level: next.level,
       current_xp: next.current_xp,
-      unspent_stat_points: next.unspent_stat_points,
       gold: character.gold,
     });
-    dbIncrementStat(character.id, template.target_stat, statDelta);
+    dbIncrementCategoryXp(character.id, template.category, xpGained);
     insertQuestLog({
       template_id: template.id,
       xp_gained: xpGained,
-      stat_gained: template.target_stat,
+      category_gained: template.category,
       streak_multiplier: streakMultiplier,
     });
     const newStreak = bumpStreakForToday();
 
-    const refreshed = dbGetCharacter();
+    // 직업 재판정 — 매번. 상태 안정성은 hysteresis가 담당.
+    const refreshedAfterUpdate = dbGetCharacter();
+    let classChange: ClassChangeEvent | null = null;
+    if (refreshedAfterUpdate) {
+      const newClass = determineClass(
+        pickCategoryXp(refreshedAfterUpdate),
+        refreshedAfterUpdate.current_class_id,
+      );
+      if (newClass !== refreshedAfterUpdate.current_class_id) {
+        const previous = refreshedAfterUpdate.current_class_id;
+        dbSetCurrentClass(refreshedAfterUpdate.id, newClass);
+        const reason: "awakening" | "transition" =
+          previous === "apprentice" ? "awakening" : "transition";
+        insertClassHistory({
+          class_id: newClass,
+          level_at_change: refreshedAfterUpdate.level,
+          reason,
+        });
+        classChange = {
+          previous,
+          next: newClass,
+          isAwakening: reason === "awakening",
+          level: refreshedAfterUpdate.level,
+        };
+      }
+    }
+
+    const finalCharacter = dbGetCharacter();
     const todayQuests = listTodayQuests();
-    set({ character: refreshed, streak: newStreak, todayQuests });
+    set({
+      character: finalCharacter,
+      streak: newStreak,
+      todayQuests,
+      pendingClassChange: classChange ?? get().pendingClassChange,
+    });
 
     return {
       xpGained,
-      statGained: template.target_stat,
+      category: template.category,
       levelsGained: next.levels_gained,
       newLevel: next.level,
       streakMultiplier,
-      classBonus,
+      classChange,
     };
   },
 
-  spendStatPoint: (stat) => {
-    const character = get().character;
-    if (!character) return;
-    const updated = dbSpendStatPoint(character.id, stat);
-    set({ character: updated });
-  },
-
-  allocateStatPoints: (allocations) => {
-    const character = get().character;
-    if (!character) return;
-    const updated = dbAllocateStatPoints(character.id, allocations);
-    set({ character: updated });
-  },
+  clearPendingClassChange: () => set({ pendingClassChange: null }),
 
   resetAll: () => {
     resetAllData();
@@ -194,6 +214,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       character: null,
       streak: getStreak(),
       todayQuests: [],
+      pendingClassChange: null,
       lastError: null,
     });
   },

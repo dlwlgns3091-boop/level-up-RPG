@@ -3,9 +3,11 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { CLASSES } from "@/constants/classes";
+import { CLASS_BY_ID, getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
+import { listClassHistory } from "@/db/classHistory";
+import type { ClassHistoryEntry } from "@/db/types";
 import {
   cancelDailyReminder,
   DEFAULT_REMINDER_HOUR,
@@ -34,8 +36,9 @@ export default function Profile() {
     DEFAULT_REMINDER_MINUTE,
   );
   const [busy, setBusy] = useState<boolean>(false);
+  const [history, setHistory] = useState<ClassHistoryEntry[]>([]);
 
-  const loadReminderState = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     const scheduled = await isDailyReminderScheduled();
     setReminderOn(scheduled);
     if (scheduled) {
@@ -45,12 +48,13 @@ export default function Profile() {
         setReminderMinute(time.minute);
       }
     }
+    setHistory(listClassHistory());
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadReminderState();
-    }, [loadReminderState]),
+      loadAll();
+    }, [loadAll]),
   );
 
   const toggleReminder = async (next: boolean) => {
@@ -92,13 +96,9 @@ export default function Profile() {
     }
   };
 
-  const classDef = character
-    ? CLASSES.find((c) => c.key === character.class) ?? null
+  const currentClassDef = character
+    ? getClass(character.current_class_id)
     : null;
-
-  if (__DEV__) {
-    console.log("[profile] rendering, reset button JSX is present");
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top", "left", "right"]}>
@@ -114,17 +114,53 @@ export default function Profile() {
           <View className="mb-6 rounded-2xl border border-bg-softer bg-bg-soft p-4">
             <Text className="text-lg font-semibold text-text">
               {character.name}
-              <Text className="text-text-muted">
-                {" the "}
-                {classDef?.nameKo ?? ""}
-              </Text>
             </Text>
-            <Text className="mt-1 text-sm text-text-muted">
+            <Text className="mt-1 text-sm font-semibold text-gold">
+              {currentClassDef?.nameKo ?? ""}
+            </Text>
+            <Text className="mt-0.5 text-xs text-text-muted">
+              {currentClassDef?.flavor ?? ""}
+            </Text>
+            <Text className="mt-2 text-xs text-text-muted">
               Lv.{character.level} · 생성일{" "}
               {character.created_at.slice(0, 10)}
             </Text>
           </View>
         ) : null}
+
+        <Section title={STRINGS.profile.classHistory}>
+          {history.length === 0 ? (
+            <Text className="text-xs text-text-muted">아직 이력 없음</Text>
+          ) : (
+            history.map((h) => {
+              const def = CLASS_BY_ID[h.class_id];
+              const reasonLabel =
+                h.reason === "initial"
+                  ? "시작"
+                  : h.reason === "awakening"
+                    ? "각성"
+                    : "전직";
+              return (
+                <View
+                  key={h.id}
+                  className="mb-1.5 flex-row items-center justify-between"
+                >
+                  <View className="flex-1">
+                    <Text className="text-sm font-semibold text-text">
+                      {def?.nameKo ?? h.class_id}
+                    </Text>
+                    <Text className="text-[11px] text-text-muted">
+                      Lv.{h.level_at_change} · {reasonLabel}
+                    </Text>
+                  </View>
+                  <Text className="text-[11px] text-text-muted">
+                    {h.changed_at.slice(0, 10)}
+                  </Text>
+                </View>
+              );
+            })
+          )}
+        </Section>
 
         <Section title="연속 달성">
           <Row label="현재 연속">
@@ -199,12 +235,15 @@ export default function Profile() {
           ) : null}
         </Section>
 
+        <Section title="업적">
+          <Text className="text-xs text-text-muted">
+            추후 업데이트 예정 (Phase 9)
+          </Text>
+        </Section>
+
         <Section title="정보">
           <Row label={STRINGS.app.name}>
-            <Text className="text-xs text-text-muted">v0.1.0 (MVP)</Text>
-          </Row>
-          <Row label="칭호 시스템">
-            <Text className="text-xs text-text-muted">추후 업데이트 예정</Text>
+            <Text className="text-xs text-text-muted">v0.2.0 (Phase 8.5)</Text>
           </Row>
         </Section>
 
@@ -216,7 +255,7 @@ export default function Profile() {
             onPress={() => {
               Alert.alert(
                 "모든 데이터 초기화",
-                "캐릭터, 퀘스트 기록, 커스텀 퀘스트, 스트릭이 모두 삭제됩니다. 되돌릴 수 없습니다.",
+                "캐릭터, 퀘스트 기록, 커스텀 퀘스트, 직업 이력, 스트릭이 모두 삭제됩니다. 되돌릴 수 없습니다.",
                 [
                   { text: STRINGS.common.cancel, style: "cancel" },
                   {
@@ -231,10 +270,14 @@ export default function Profile() {
                 ],
               );
             }}
-            className="flex-row items-center justify-center rounded-2xl border border-red-500 bg-bg-soft p-4 active:opacity-80"
+            className="flex-row items-center justify-center rounded-2xl border bg-bg-soft p-4 active:opacity-80"
+            style={{ borderColor: COLORS.danger }}
           >
-            <Ionicons name="trash" size={18} color="#EF4444" />
-            <Text className="ml-2 text-base font-bold text-red-500">
+            <Ionicons name="trash" size={18} color={COLORS.danger} />
+            <Text
+              className="ml-2 text-base font-bold"
+              style={{ color: COLORS.danger }}
+            >
               모든 데이터 초기화
             </Text>
           </Pressable>
@@ -279,15 +322,7 @@ function Row({
   return (
     <View className="flex-row items-center justify-between py-1.5">
       <Text className="text-sm text-text">{label}</Text>
-      <View className="flex-row items-center">
-        {children}
-        <Ionicons
-          name="chevron-forward"
-          size={14}
-          color="transparent"
-          style={{ marginLeft: 6 }}
-        />
-      </View>
+      <View className="flex-row items-center">{children}</View>
     </View>
   );
 }

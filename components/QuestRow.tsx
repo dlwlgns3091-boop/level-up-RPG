@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
-import { STAT_LABELS_KO } from "@/constants/classes";
+import { CATEGORY_LABELS_KO } from "@/constants/categories";
 import { COLORS } from "@/constants/theme";
 import type { QuestTemplate } from "@/db/types";
 
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function QuestRow({ template, done, disabled = false, onPress }: Props) {
-  const statColor = COLORS.stat[template.target_stat];
+  const color = COLORS.category[template.category];
 
   return (
     <Pressable
@@ -51,10 +51,10 @@ export function QuestRow({ template, done, disabled = false, onPress }: Props) {
       <View className="ml-3 items-end">
         <View
           className="rounded-full px-2 py-0.5"
-          style={{ backgroundColor: `${statColor}33` }}
+          style={{ backgroundColor: `${color}33` }}
         >
-          <Text className="text-xs font-semibold" style={{ color: statColor }}>
-            +{template.xp_reward} {STAT_LABELS_KO[template.target_stat]}
+          <Text className="text-xs font-semibold" style={{ color }}>
+            +{template.xp_reward} {CATEGORY_LABELS_KO[template.category]}
           </Text>
         </View>
       </View>
