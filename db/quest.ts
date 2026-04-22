@@ -125,6 +125,30 @@ export function getKstDayBounds(now: Date = new Date()): {
   return { start, end, dateKey };
 }
 
+/**
+ * KST 기준 이번 주(월~일)의 시작/끝.
+ */
+export function getKstWeekBounds(now: Date = new Date()): {
+  start: string;
+  end: string;
+} {
+  const kstOffsetMs = 9 * 60 * 60 * 1000;
+  const kstNow = new Date(now.getTime() + kstOffsetMs);
+  const y = kstNow.getUTCFullYear();
+  const m = kstNow.getUTCMonth();
+  const d = kstNow.getUTCDate();
+  const todayUtc = Date.UTC(y, m, d);
+  // getUTCDay(): 0=Sun, 1=Mon, ..., 6=Sat
+  const dow = new Date(todayUtc).getUTCDay();
+  const daysSinceMonday = (dow + 6) % 7; // Monday -> 0, Sunday -> 6
+  const mondayUtc = todayUtc - daysSinceMonday * 24 * 60 * 60 * 1000;
+  const start = new Date(mondayUtc - kstOffsetMs).toISOString();
+  const end = new Date(
+    mondayUtc - kstOffsetMs + 7 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  return { start, end };
+}
+
 export function listLogsBetween(startIso: string, endIso: string): QuestLog[] {
   const db = getDb();
   return db.getAllSync<QuestLog>(
