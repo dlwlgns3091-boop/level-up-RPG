@@ -1,9 +1,23 @@
 import { Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
+import { COLORS } from "@/constants/theme";
+import { useCharacterStore } from "@/store/useCharacterStore";
 
-/**
- * Phase 1 placeholder: 무조건 온보딩으로 보냅니다.
- * Phase 3에서 캐릭터 존재 여부에 따라 (tabs)/home 으로 분기합니다.
- */
 export default function Index() {
-  return <Redirect href="/onboarding/welcome" />;
+  const isReady = useCharacterStore((s) => s.isReady);
+  const character = useCharacterStore((s) => s.character);
+
+  if (!isReady) {
+    return (
+      <View className="flex-1 items-center justify-center bg-bg">
+        <ActivityIndicator color={COLORS.gold} />
+      </View>
+    );
+  }
+
+  return character ? (
+    <Redirect href="/(tabs)/home" />
+  ) : (
+    <Redirect href="/onboarding/welcome" />
+  );
 }
