@@ -52,6 +52,15 @@ CREATE TABLE IF NOT EXISTS couple_events (
 CREATE INDEX IF NOT EXISTS idx_events_couple_date
   ON couple_events(couple_id, event_date);
 
+-- Phase 11.5: 사진을 이벤트(기록)에 소속시킬 수 있게. NULL이면 라이브러리 전용.
+-- 이벤트 삭제 시 사진은 고아로 남겨 라이브러리에 남는다(ON DELETE SET NULL).
+ALTER TABLE couple_photos
+  ADD COLUMN IF NOT EXISTS event_id UUID
+    REFERENCES couple_events(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_photos_event_id
+  ON couple_photos(event_id);
+
 -- ---------- Helper function -------------------------------------------------
 -- Returns the couple id the current user belongs to, or NULL if none.
 -- Runs with invoker rights so it respects RLS on couples itself.

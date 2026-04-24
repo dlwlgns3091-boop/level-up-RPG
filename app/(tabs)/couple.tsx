@@ -400,15 +400,22 @@ function ConnectedView({
 
       <Section title="기능">
         <FeatureRow
-          icon="camera"
-          title="사진 라이브러리"
-          subtitle="날짜별로 모아 보기 + 업로드"
-          onPress={() => router.push("/photos")}
-        />
-        <DisabledFeatureRow
           icon="calendar"
-          title="일정 공유"
-          subtitle="Phase 11.5에서 구현"
+          title="캘린더"
+          subtitle="월별로 기록 한눈에 보기"
+          onPress={() => router.push("/calendar")}
+        />
+        <FeatureRow
+          icon="journal"
+          title="기록"
+          subtitle="일정·메모·사진을 묶은 하루 기록"
+          onPress={() => router.push("/log")}
+        />
+        <FeatureRow
+          icon="images"
+          title="사진 라이브러리"
+          subtitle="모든 사진 통합 보기"
+          onPress={() => router.push("/photos")}
         />
       </Section>
     </ScrollView>
@@ -443,12 +450,14 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
 function DisabledFeatureRow({
   icon,
   title,
   subtitle,
 }: {
-  icon: "camera" | "calendar";
+  icon: IoniconName;
   title: string;
   subtitle: string;
 }) {
@@ -474,7 +483,7 @@ function FeatureRow({
   subtitle,
   onPress,
 }: {
-  icon: "camera" | "calendar";
+  icon: IoniconName;
   title: string;
   subtitle: string;
   onPress: () => void;

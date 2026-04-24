@@ -42,6 +42,9 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" options={{ presentation: "modal" }} />
         <Stack.Screen name="photos" />
+        <Stack.Screen name="calendar" />
+        <Stack.Screen name="log" />
+        <Stack.Screen name="events" />
         <Stack.Screen
           name="modals/quest-detail"
           options={{ presentation: "modal" }}

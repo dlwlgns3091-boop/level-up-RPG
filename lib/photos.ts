@@ -20,6 +20,7 @@ export type CouplePhoto = {
   taken_at: string;
   caption: string | null;
   uploaded_at: string;
+  event_id: string | null;
 };
 
 export type PickedPhotoMeta = {
@@ -33,6 +34,8 @@ export type UploadInput = {
   localUri: string;
   takenAt: string; // YYYY-MM-DD
   caption: string | null;
+  /** Phase 11.5: 이벤트에 묶어 업로드할 때 해당 id. 없으면 라이브러리 전용. */
+  eventId?: string | null;
 };
 
 /**
@@ -83,6 +86,41 @@ export async function listPhotos(coupleId: string): Promise<CouplePhoto[]> {
     .order("uploaded_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as CouplePhoto[];
+}
+
+export async function listPhotosByEvent(
+  eventId: string,
+): Promise<CouplePhoto[]> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("couple_photos")
+    .select("*")
+    .eq("event_id", eventId)
+    .order("uploaded_at", { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as CouplePhoto[];
+}
+
+export async function attachPhotosToEvent(
+  eventId: string,
+  photoIds: readonly string[],
+): Promise<void> {
+  if (photoIds.length === 0) return;
+  const supabase = requireSupabase();
+  const { error } = await supabase
+    .from("couple_photos")
+    .update({ event_id: eventId })
+    .in("id", [...photoIds]);
+  if (error) throw error;
+}
+
+export async function detachPhotoFromEvent(photoId: string): Promise<void> {
+  const supabase = requireSupabase();
+  const { error } = await supabase
+    .from("couple_photos")
+    .update({ event_id: null })
+    .eq("id", photoId);
+  if (error) throw error;
 }
 
 /**
@@ -168,6 +206,7 @@ export async function uploadPhoto(input: UploadInput): Promise<CouplePhoto> {
       storage_path: storagePath,
       taken_at: input.takenAt,
       caption: input.caption,
+      event_id: input.eventId ?? null,
     })
     .select()
     .single<CouplePhoto>();
