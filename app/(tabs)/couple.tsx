@@ -6,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -359,6 +360,7 @@ function ConnectedView({
   anniversary: string | null;
   connectedAt: string | null;
 }) {
+  const router = useRouter();
   const dPlus = useMemo(() => daysSince(anniversary), [anniversary]);
   const partnerId = meId === userA ? userB : userA;
 
@@ -397,10 +399,11 @@ function ConnectedView({
       </View>
 
       <Section title="기능">
-        <DisabledFeatureRow
+        <FeatureRow
           icon="camera"
           title="사진 라이브러리"
-          subtitle="Phase 11.4에서 구현"
+          subtitle="날짜별로 모아 보기 + 업로드"
+          onPress={() => router.push("/photos")}
         />
         <DisabledFeatureRow
           icon="calendar"
@@ -462,6 +465,37 @@ function DisabledFeatureRow({
         <Text className="text-[11px] text-text-muted">{subtitle}</Text>
       </View>
     </View>
+  );
+}
+
+function FeatureRow({
+  icon,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: "camera" | "calendar";
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      className="mb-1 flex-row items-center py-1 active:opacity-70 last:mb-0"
+    >
+      <View
+        className="mr-3 h-9 w-9 items-center justify-center rounded-lg"
+        style={{ backgroundColor: `${COLORS.gold}33` }}
+      >
+        <Ionicons name={icon} size={18} color={COLORS.gold} />
+      </View>
+      <View className="flex-1">
+        <Text className="text-sm font-semibold text-text">{title}</Text>
+        <Text className="text-[11px] text-text-muted">{subtitle}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+    </Pressable>
   );
 }
 

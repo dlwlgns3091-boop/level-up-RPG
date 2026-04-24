@@ -41,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" options={{ presentation: "modal" }} />
+        <Stack.Screen name="photos" />
         <Stack.Screen
           name="modals/quest-detail"
           options={{ presentation: "modal" }}

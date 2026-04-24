@@ -33,7 +33,14 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "연인과 공유할 사진을 선택하기 위해 사진 접근 권한이 필요합니다.",
+          "cameraPermission": "연인과 공유할 사진을 촬영하기 위해 카메라 권한이 필요합니다."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
