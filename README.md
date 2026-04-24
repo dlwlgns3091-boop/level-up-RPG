@@ -131,4 +131,41 @@ store/
 
 ## 데이터
 
-모든 데이터는 기기 로컬 SQLite (`expo-sqlite`)에 저장. 클라우드 싱크 없음. 프로필 탭의 "모든 데이터 초기화" 버튼으로 전체 리셋 가능.
+개인 데이터(레벨·퀘스트·스탯·스트릭)는 전부 기기 로컬 SQLite(`expo-sqlite`). 프로필 탭 "모든 데이터 초기화"로 전체 리셋 가능.
+
+커플 공유 데이터(사진·일정)만 Supabase를 사용 — 아래 Phase 11 섹션 참고. Supabase 환경 변수가 없으면 "우리" 탭이 비활성화될 뿐, 기존 기능은 그대로 동작.
+
+## Phase 11 — 커플 공유 (Supabase)
+
+둘이 공유하는 사진 라이브러리 + 일정은 Supabase 백엔드에 저장된다. 개인 데이터는 여전히 로컬이므로, Supabase를 설정하지 않아도 앱 전체가 동작한다.
+
+### Supabase 프로젝트 1회 세팅
+
+1. [supabase.com](https://supabase.com) 가입 → **New project**
+   - Region: 한국에서 가까운 `ap-northeast-1`(도쿄) 권장
+   - DB password는 안전한 곳에 보관 (관리 콘솔 접근에만 필요, 앱에선 안 씀)
+2. 좌측 메뉴 **SQL Editor** → [`supabase/schema.sql`](./supabase/schema.sql) 내용을 전체 복사해서 붙여넣고 **Run**
+3. 좌측 **Storage** → **New bucket**
+   - 이름: `couple-photos`
+   - **Public bucket 체크 해제** (Private로 유지)
+4. 좌측 **Project Settings** → **API**
+   - `Project URL` 복사
+   - `anon public` 키 복사 (⚠️ `service_role` 아님)
+5. 프로젝트 루트의 `.env.example`을 복사해 `.env` 생성:
+   ```bash
+   cp .env.example .env
+   ```
+   그리고 `.env`에 복사한 값 붙여넣기:
+   ```
+   EXPO_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+   ```
+6. Expo 개발 서버 재시작: `npx expo start --clear`
+
+### 왜 anon key를 클라이언트에 노출해도 안전한가
+
+모든 테이블이 Row-Level Security로 잠겨 있어서, anon key는 "인증된 사용자 본인의 커플 데이터"에만 접근할 수 있다. `service_role` 키는 절대로 앱에 넣지 말 것 — 그건 모든 RLS를 우회한다.
+
+### 환경 변수가 없을 때
+
+`EXPO_PUBLIC_SUPABASE_URL` 또는 `EXPO_PUBLIC_SUPABASE_ANON_KEY`가 비어 있으면 `lib/supabase.ts`의 `supabase` export가 `null`이 되고, `SUPABASE_CONFIGURED`가 `false`가 된다. UI는 이 플래그를 보고 "우리" 탭을 비활성화하거나 세팅 안내를 표시한다. 기존 로컬 기능(홈/퀘스트/스탯/나)은 영향 없이 동작.
