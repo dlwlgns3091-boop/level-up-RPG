@@ -1,3 +1,4 @@
+import { normalizeErrorMessage } from "./errors";
 import { requireSupabase } from "./supabase";
 
 /**
@@ -71,8 +72,12 @@ export async function redeemInvite(code: string): Promise<string> {
   const { data, error } = await supabase.rpc("redeem_invite_code", {
     code: trimmed,
   });
-  if (error) throw error;
+  if (error) {
+    console.error("[couple] redeem rpc error:", error);
+    throw error;
+  }
   if (typeof data !== "string") {
+    console.error("[couple] redeem unexpected shape:", data);
     throw new Error("redeem_invite_code_returned_unexpected_shape");
   }
   return data;
@@ -89,8 +94,14 @@ export async function cancelPendingInvite(coupleId: string): Promise<void> {
   if (error) throw error;
 }
 
-export function translateCoupleError(message: string): string {
-  const lower = message.toLowerCase();
+/**
+ * 에러 객체/문자열/태그 어떤 형태든 받아 한국어로 변환.
+ * PostgrestError는 `{ message: "not_authenticated", ... }` 형태이므로
+ * 메시지를 추출한 뒤 태그 매칭.
+ */
+export function translateCoupleError(input: unknown): string {
+  const raw = normalizeErrorMessage(input);
+  const lower = raw.toLowerCase();
   if (lower.includes("not_authenticated")) return "로그인이 필요합니다.";
   if (lower.includes("invalid_code")) return "코드를 입력해주세요.";
   if (lower.includes("invalid_or_used"))
@@ -103,7 +114,7 @@ export function translateCoupleError(message: string): string {
     return "코드 생성에 실패했습니다. 잠시 후 다시 시도해주세요.";
   if (lower.includes("network") || lower.includes("fetch"))
     return "네트워크 오류입니다. 연결을 확인해주세요.";
-  return message;
+  return raw;
 }
 
 /** 하루 단위 D+일 계산. anniversary가 null이면 null 반환. */

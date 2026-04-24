@@ -4,6 +4,7 @@ import { decode as decodeBase64 } from "base64-arraybuffer";
 // 우선 legacy로 두고 SDK55에서 재평가.
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImageManipulator from "expo-image-manipulator";
+import { normalizeErrorMessage } from "./errors";
 import { requireSupabase } from "./supabase";
 
 const BUCKET = "couple-photos";
@@ -212,13 +213,17 @@ export async function updateCaption(
   return data;
 }
 
-export function translatePhotoError(message: string): string {
-  const lower = message.toLowerCase();
+export function translatePhotoError(input: unknown): string {
+  const raw = normalizeErrorMessage(input);
+  const lower = raw.toLowerCase();
   if (lower.includes("permission")) return "사진 권한이 필요합니다.";
   if (lower.includes("network") || lower.includes("fetch")) {
     return "네트워크 오류입니다. 연결을 확인해주세요.";
   }
   if (lower.includes("payload too large") || lower.includes("size"))
     return "사진 파일이 너무 큽니다.";
-  return message;
+  if (lower.includes("row-level security") || lower.includes("rls")) {
+    return "접근 권한이 없습니다. 커플 연결 상태를 확인해주세요.";
+  }
+  return raw;
 }

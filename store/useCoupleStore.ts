@@ -42,8 +42,8 @@ export const useCoupleStore = create<CoupleState>((set, get) => ({
       const couple = await fetchMyCouple();
       set({ couple, lastError: null });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      set({ lastError: translateCoupleError(msg) });
+      console.error("[couple] loadCouple error:", e);
+      set({ lastError: translateCoupleError(e) });
     } finally {
       set({ isLoading: false });
     }
@@ -59,8 +59,8 @@ export const useCoupleStore = create<CoupleState>((set, get) => ({
       set({ couple, lastError: null });
       return { ok: true };
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const pretty = translateCoupleError(msg);
+      console.error("[couple] createInvite error:", e);
+      const pretty = translateCoupleError(e);
       set({ lastError: pretty });
       return { ok: false, errorMessage: pretty };
     } finally {
@@ -79,8 +79,8 @@ export const useCoupleStore = create<CoupleState>((set, get) => ({
       set({ couple, lastError: null });
       return { ok: true };
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const pretty = translateCoupleError(msg);
+      console.error("[couple] redeem error:", e);
+      const pretty = translateCoupleError(e);
       set({ lastError: pretty });
       return { ok: false, errorMessage: pretty };
     } finally {
@@ -96,8 +96,8 @@ export const useCoupleStore = create<CoupleState>((set, get) => ({
       await cancelPendingInvite(current.id);
       set({ couple: null, lastError: null });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      set({ lastError: translateCoupleError(msg) });
+      console.error("[couple] cancelInvite error:", e);
+      set({ lastError: translateCoupleError(e) });
     } finally {
       set({ busy: false });
     }

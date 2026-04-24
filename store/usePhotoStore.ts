@@ -46,8 +46,8 @@ export const usePhotoStore = create<PhotoState>((set, get) => ({
       const signedUrls = paths.length > 0 ? await apiSignUrls(paths) : {};
       set({ photos, signedUrls, lastError: null });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      set({ lastError: translatePhotoError(msg) });
+      console.error("[photos] load error:", e);
+      set({ lastError: translatePhotoError(e) });
     } finally {
       set({ isLoading: false });
     }
@@ -75,8 +75,8 @@ export const usePhotoStore = create<PhotoState>((set, get) => ({
       });
       return { ok: true };
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const pretty = translatePhotoError(msg);
+      console.error("[photos] upload error:", e);
+      const pretty = translatePhotoError(e);
       set({ lastError: pretty });
       return { ok: false, errorMessage: pretty };
     } finally {
@@ -94,8 +94,8 @@ export const usePhotoStore = create<PhotoState>((set, get) => ({
       set({ photos: nextPhotos, signedUrls: urls, lastError: null });
       return { ok: true };
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const pretty = translatePhotoError(msg);
+      console.error("[photos] remove error:", e);
+      const pretty = translatePhotoError(e);
       set({ lastError: pretty });
       return { ok: false, errorMessage: pretty };
     } finally {
@@ -113,8 +113,8 @@ export const usePhotoStore = create<PhotoState>((set, get) => ({
       set({ photos: nextPhotos, lastError: null });
       return { ok: true };
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const pretty = translatePhotoError(msg);
+      console.error("[photos] editCaption error:", e);
+      const pretty = translatePhotoError(e);
       set({ lastError: pretty });
       return { ok: false, errorMessage: pretty };
     } finally {
@@ -129,8 +129,8 @@ export const usePhotoStore = create<PhotoState>((set, get) => ({
       const signed = await apiSignUrls(paths);
       set({ signedUrls: signed });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      set({ lastError: translatePhotoError(msg) });
+      console.error("[photos] refreshUrls error:", e);
+      set({ lastError: translatePhotoError(e) });
     }
   },
 
