@@ -1,14 +1,14 @@
 import "react-native-url-polyfill/auto";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { secureStorageAdapter } from "./secureStorageAdapter";
 
 /**
  * Supabase는 옵션이다. env 변수가 비어 있으면 클라이언트는 null로 유지되고
  * 기존 로컬 전용 모드가 그대로 작동한다. 모든 호출부는 SUPABASE_CONFIGURED 또는
  * supabase 존재 여부를 먼저 체크할 것.
  *
- * Phase 11.2에서 auth 세션 저장을 SecureStore로 바꿀지 여부를 재평가.
- * 현재는 Supabase 공식 React Native 가이드를 따라 AsyncStorage 사용.
+ * 세션 저장소는 expo-secure-store 기반 청크 어댑터를 사용한다
+ * (iOS SecureStore의 2KB 값 제한 때문에 청킹 필요).
  */
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -22,7 +22,7 @@ if (SUPABASE_CONFIGURED && SUPABASE_URL && SUPABASE_ANON_KEY) {
   try {
     _client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        storage: AsyncStorage,
+        storage: secureStorageAdapter,
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,

@@ -20,6 +20,8 @@ import {
   requestNotificationPermission,
   scheduleDailyReminder,
 } from "@/lib/notifications";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 const HOUR_OPTIONS = [7, 8, 9, 12, 20, 22] as const;
@@ -29,6 +31,12 @@ export default function Profile() {
   const character = useCharacterStore((s) => s.character);
   const streak = useCharacterStore((s) => s.streak);
   const resetAll = useCharacterStore((s) => s.resetAll);
+
+  const authReady = useAuthStore((s) => s.isReady);
+  const authSession = useAuthStore((s) => s.session);
+  const authUser = useAuthStore((s) => s.user);
+  const authBusy = useAuthStore((s) => s.busy);
+  const signOut = useAuthStore((s) => s.signOut);
 
   const [reminderOn, setReminderOn] = useState<boolean>(false);
   const [reminderHour, setReminderHour] = useState<number>(
@@ -182,6 +190,76 @@ export default function Profile() {
               </Text>
             </Row>
           ) : null}
+        </Section>
+
+        <Section title="계정">
+          {!SUPABASE_CONFIGURED ? (
+            <Text className="text-xs text-text-muted">
+              Supabase가 설정되지 않았습니다. 커플 공유 기능을 쓰려면 .env에 EXPO_PUBLIC_SUPABASE_URL과 EXPO_PUBLIC_SUPABASE_ANON_KEY를 설정하세요.
+            </Text>
+          ) : !authReady ? (
+            <Text className="text-xs text-text-muted">세션 확인 중…</Text>
+          ) : authSession && authUser ? (
+            <>
+              <View className="py-1">
+                <Text className="text-xs text-text-muted">로그인 이메일</Text>
+                <Text className="mt-0.5 text-sm text-text">
+                  {authUser.email ?? "(이메일 없음)"}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  Alert.alert(
+                    "로그아웃",
+                    "로그아웃하시면 커플 공유 기능을 다시 사용하려면 로그인이 필요합니다.",
+                    [
+                      { text: STRINGS.common.cancel, style: "cancel" },
+                      {
+                        text: "로그아웃",
+                        style: "destructive",
+                        onPress: async () => {
+                          await signOut();
+                        },
+                      },
+                    ],
+                  );
+                }}
+                className="mt-3 flex-row items-center justify-center rounded-xl border border-bg-softer bg-bg px-3 py-2 active:opacity-80"
+                disabled={authBusy}
+              >
+                <Ionicons
+                  name="log-out-outline"
+                  size={16}
+                  color={COLORS.textMuted}
+                />
+                <Text className="ml-2 text-sm text-text-muted">로그아웃</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text className="mb-3 text-xs text-text-muted">
+                로그인 시 커플 공유 기능(사진·일정)을 사용할 수 있습니다. 로컬 데이터(레벨/퀘스트/스탯)는 로그인과 무관하게 유지됩니다.
+              </Text>
+              <View className="flex-row">
+                <View className="mr-2 flex-1">
+                  <Pressable
+                    onPress={() => router.push("/auth/sign-in")}
+                    className="items-center justify-center rounded-2xl bg-gold px-4 py-3 active:opacity-80"
+                  >
+                    <Text className="text-sm font-bold text-bg">로그인</Text>
+                  </Pressable>
+                </View>
+                <View className="flex-1">
+                  <Pressable
+                    onPress={() => router.push("/auth/sign-up")}
+                    className="items-center justify-center rounded-2xl border border-bg-softer bg-bg-soft px-4 py-3 active:opacity-80"
+                  >
+                    <Text className="text-sm font-bold text-text">회원가입</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </>
+          )}
         </Section>
 
         <Section title="알림">
