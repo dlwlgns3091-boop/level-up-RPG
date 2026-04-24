@@ -23,6 +23,7 @@ export const STRINGS = {
     quests: "퀘스트",
     stats: "성장",
     profile: "나",
+    couple: "우리",
   },
   home: {
     todaysQuests: "오늘의 퀘스트",

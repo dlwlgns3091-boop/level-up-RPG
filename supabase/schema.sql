@@ -138,6 +138,61 @@ CREATE POLICY couple_photos_storage_delete ON storage.objects
     AND (storage.foldername(name))[1] = my_couple_id()::text
   );
 
+-- ---------- Invite code redemption -----------------------------------------
+-- RLS on couples blocks user B from UPDATEing a row they aren't yet part of,
+-- so redemption runs in SECURITY DEFINER. Errors are raised as short
+-- machine-readable tags that the client translates to Korean.
+
+CREATE OR REPLACE FUNCTION redeem_invite_code(code TEXT) RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  target_couple_id UUID;
+  my_id UUID := auth.uid();
+  normalized_code TEXT;
+BEGIN
+  IF my_id IS NULL THEN
+    RAISE EXCEPTION 'not_authenticated';
+  END IF;
+
+  normalized_code := upper(trim(coalesce(code, '')));
+  IF length(normalized_code) = 0 THEN
+    RAISE EXCEPTION 'invalid_code';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM couples WHERE user_a = my_id OR user_b = my_id) THEN
+    RAISE EXCEPTION 'already_connected';
+  END IF;
+
+  SELECT id INTO target_couple_id
+    FROM couples
+   WHERE invite_code = normalized_code AND user_b IS NULL
+   LIMIT 1;
+
+  IF target_couple_id IS NULL THEN
+    RAISE EXCEPTION 'invalid_or_used';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM couples WHERE id = target_couple_id AND user_a = my_id
+  ) THEN
+    RAISE EXCEPTION 'cannot_join_own';
+  END IF;
+
+  UPDATE couples
+     SET user_b = my_id,
+         invite_code = NULL,
+         connected_at = now()
+   WHERE id = target_couple_id;
+
+  RETURN target_couple_id;
+END
+$$;
+
+REVOKE ALL ON FUNCTION redeem_invite_code(TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION redeem_invite_code(TEXT) TO authenticated;
+
 -- ============================================================================
 -- Done. Next: create the 'couple-photos' bucket (private) in Storage UI.
 -- ============================================================================

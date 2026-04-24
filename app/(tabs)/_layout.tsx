@@ -52,6 +52,15 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="couple"
+        options={{
+          title: STRINGS.tabs.couple,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="heart" color={color} size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
