@@ -1,6 +1,6 @@
 import { Redirect } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function Index() {

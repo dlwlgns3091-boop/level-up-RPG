@@ -19,11 +19,12 @@ import {
 } from "@/components/pixelStyles";
 import { ClassSprite, StarIcon, TrophyIcon } from "@/components/sprites";
 import type { ClassId } from "@/constants/classes";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function LevelUp() {
   const router = useRouter();
+  const COLORS = useColors();
   const params = useLocalSearchParams<{ level?: string; points?: string }>();
   const level = Number(params.level ?? "1");
   const levelsGained = Number(params.points ?? "1");
@@ -88,7 +89,7 @@ export default function LevelUp() {
             maxWidth: 420,
             padding: 24,
             backgroundColor: COLORS.bgSoft,
-            ...pixelCard(PIXEL_RADIUS.xl, 6),
+            ...pixelCard(COLORS.ink, PIXEL_RADIUS.xl, 6),
           },
         ]}
       >

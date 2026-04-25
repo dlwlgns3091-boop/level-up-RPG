@@ -1,5 +1,5 @@
 import { ActivityIndicator, Text, View } from "react-native";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 
 type Props = {
   /** "small" | "large" — RN ActivityIndicator. */
@@ -8,6 +8,7 @@ type Props = {
 };
 
 export function Spinner({ size = "small", label }: Props) {
+  const COLORS = useColors();
   return (
     <View className="flex-row items-center justify-center">
       <ActivityIndicator size={size} color={COLORS.gold} />
@@ -19,6 +20,7 @@ export function Spinner({ size = "small", label }: Props) {
 }
 
 export function CenteredSpinner({ size = "large", label }: Props) {
+  const COLORS = useColors();
   return (
     <View className="flex-1 items-center justify-center">
       <ActivityIndicator size={size} color={COLORS.gold} />

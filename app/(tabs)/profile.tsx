@@ -6,7 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PIXEL_FONT } from "@/components/pixelStyles";
 import { CLASS_BY_ID, getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
+import { THEME_LABELS } from "@/constants/themes";
 import { listClassHistory } from "@/db/classHistory";
 import type { ClassHistoryEntry } from "@/db/types";
 import {
@@ -24,14 +25,19 @@ import {
 import { SUPABASE_CONFIGURED } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCharacterStore } from "@/store/useCharacterStore";
+import { useThemeStore } from "@/store/useThemeStore";
 
 const HOUR_OPTIONS = [7, 8, 9, 12, 20, 22] as const;
 
 export default function Profile() {
   const router = useRouter();
+  const COLORS = useColors();
   const character = useCharacterStore((s) => s.character);
   const streak = useCharacterStore((s) => s.streak);
   const resetAll = useCharacterStore((s) => s.resetAll);
+
+  const themeId = useThemeStore((s) => s.themeId);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
   const authReady = useAuthStore((s) => s.isReady);
   const authSession = useAuthStore((s) => s.session);
@@ -269,6 +275,62 @@ export default function Profile() {
               </View>
             </>
           )}
+        </Section>
+
+        <Section title="테마">
+          <Text
+            style={{
+              marginBottom: 10,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 11,
+              color: COLORS.textMuted,
+            }}
+          >
+            앱 전체 색감을 한 번에 바꿉니다. 선택값은 자동 저장됩니다.
+          </Text>
+          <View style={{ flexDirection: "row" }}>
+            {(["midnight", "butter"] as const).map((id) => {
+              const active = themeId === id;
+              return (
+                <Pressable
+                  key={id}
+                  onPress={() => setTheme(id)}
+                  style={{
+                    flex: 1,
+                    marginRight: id === "midnight" ? 8 : 0,
+                    paddingVertical: 10,
+                    alignItems: "center",
+                    borderRadius: 8,
+                    borderWidth: 2,
+                    borderColor: active ? COLORS.gold : COLORS.bgSofter,
+                    backgroundColor: active
+                      ? `${COLORS.gold}22`
+                      : COLORS.bg,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: PIXEL_FONT.uiBold,
+                      fontSize: 13,
+                      color: active ? COLORS.gold : COLORS.text,
+                    }}
+                  >
+                    {THEME_LABELS[id]}
+                  </Text>
+                  <Text
+                    style={{
+                      marginTop: 2,
+                      fontFamily: PIXEL_FONT.ui,
+                      fontSize: 10,
+                      color: COLORS.textMuted,
+                    }}
+                  >
+                    {id === "midnight" ? "다크 · 기본" : "라이트 · 크림"}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </Section>
 
         <Section title="알림">

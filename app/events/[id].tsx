@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { signUrls } from "@/lib/photos";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useEventStore } from "@/store/useEventStore";

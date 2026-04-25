@@ -10,7 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { CategoryIcon, CheckIcon } from "@/components/sprites";
 import { CATEGORY_LABELS_KO } from "@/constants/categories";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import type { QuestTemplate } from "@/db/types";
 import {
   PIXEL_BORDER_WIDTH,
@@ -37,6 +37,7 @@ export function QuestRow({
   onPress,
   onLongPress,
 }: Props) {
+  const COLORS = useColors();
   const color = COLORS.category[template.category];
 
   const checkScale = useSharedValue(done ? 1 : 0);
@@ -78,7 +79,7 @@ export function QuestRow({
         borderColor: COLORS.ink,
         backgroundColor: COLORS.bgSoft,
         opacity: done ? 0.65 : 1,
-        ...steppedShadow(3),
+        ...steppedShadow(COLORS.ink, 3),
       }}
     >
       {/* 카테고리 아이콘 박스 */}

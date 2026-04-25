@@ -20,12 +20,13 @@ import { CategoryIcon, ClassSprite, StarIcon } from "@/components/sprites";
 import { CATEGORIES } from "@/constants/categories";
 import { CLASS_BY_ID, type ClassId, getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 import { pickCategoryXp } from "@/types/category";
 
 export default function ClassChange() {
   const router = useRouter();
+  const COLORS = useColors();
   const params = useLocalSearchParams<{
     previous?: string;
     next?: string;
@@ -115,7 +116,7 @@ export default function ClassChange() {
             maxWidth: 420,
             padding: 22,
             backgroundColor: COLORS.bgSoft,
-            ...pixelCard(PIXEL_RADIUS.xl, 6),
+            ...pixelCard(COLORS.ink, PIXEL_RADIUS.xl, 6),
           },
         ]}
       >

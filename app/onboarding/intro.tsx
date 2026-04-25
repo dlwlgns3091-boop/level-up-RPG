@@ -11,10 +11,11 @@ import {
 } from "@/components/pixelStyles";
 import { CATEGORIES } from "@/constants/categories";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 
 export default function Intro() {
   const router = useRouter();
+  const COLORS = useColors();
 
   return (
     <SafeAreaView className="flex-1 bg-bg">
@@ -65,7 +66,7 @@ export default function Intro() {
             width: "100%",
             padding: 14,
             backgroundColor: COLORS.bgSoft,
-            ...pixelCard(PIXEL_RADIUS.lg, 4),
+            ...pixelCard(COLORS.ink, PIXEL_RADIUS.lg, 4),
           }}
         >
           {CATEGORIES.map((c) => (

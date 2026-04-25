@@ -18,11 +18,12 @@ import {
 import { CategoryIcon } from "@/components/sprites";
 import { CATEGORIES } from "@/constants/categories";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 
 export default function CharacterCreate() {
   const router = useRouter();
+  const COLORS = useColors();
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const createCharacter = useCharacterStore((s) => s.createCharacter);
@@ -73,7 +74,7 @@ export default function CharacterCreate() {
               marginTop: 24,
               padding: 14,
               backgroundColor: COLORS.bgSoft,
-              ...pixelCard(PIXEL_RADIUS.lg, 4),
+              ...pixelCard(COLORS.ink, PIXEL_RADIUS.lg, 4),
             }}
           >
             <Text

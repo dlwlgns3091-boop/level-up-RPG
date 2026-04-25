@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { ClassSprite } from "@/components/sprites";
 import { getClass } from "@/constants/classes";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import { xpForNextLevel } from "@/db/leveling";
 import type { Character } from "@/db/types";
 import { PIXEL_FONT, PIXEL_RADIUS, pixelCard } from "./pixelStyles";
@@ -12,6 +12,7 @@ type Props = {
 };
 
 export function CharacterCard({ character }: Props) {
+  const COLORS = useColors();
   const def = getClass(character.current_class_id);
   const need = xpForNextLevel(character.level);
   const ratio = Math.min(1, character.current_xp / need);
@@ -21,7 +22,7 @@ export function CharacterCard({ character }: Props) {
       style={{
         backgroundColor: COLORS.bgSoft,
         padding: 20,
-        ...pixelCard(PIXEL_RADIUS.lg, 4),
+        ...pixelCard(COLORS.ink, PIXEL_RADIUS.lg, 4),
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import { useOnlineStatus } from "@/lib/network";
 
 /**
@@ -10,6 +10,7 @@ import { useOnlineStatus } from "@/lib/network";
  */
 export function OfflineBanner() {
   const { isOnline } = useOnlineStatus();
+  const COLORS = useColors();
   if (isOnline) return null;
   return (
     <SafeAreaView edges={["top"]} style={{ backgroundColor: COLORS.danger }}>

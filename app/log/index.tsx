@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CenteredSpinner } from "@/components/Spinner";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useOnlineStatus } from "@/lib/network";
 import { useCoupleStore } from "@/store/useCoupleStore";
 import { useEventStore } from "@/store/useEventStore";

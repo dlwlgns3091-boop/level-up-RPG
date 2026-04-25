@@ -18,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { CenteredSpinner } from "@/components/Spinner";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useOnlineStatus } from "@/lib/network";
 import { extractTakenAt } from "@/lib/photos";
 import { useAuthStore } from "@/store/useAuthStore";

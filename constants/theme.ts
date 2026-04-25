@@ -1,63 +1,20 @@
+import { useThemeStore } from "@/store/useThemeStore";
 import type { CategoryKey } from "./categories";
+import { MIDNIGHT_PALETTE, type Palette } from "./themes";
 
 /**
- * Midnight Arcade 팔레트 (Phase 12.A).
- * 디자인 핸드오프(`design_handoff_lifequest/tokens.css`)와 정확히 동기화.
+ * 정적(default) 컬러 토큰. 모듈 로드 시점에 캡처되므로 테마 토글에 반응하지 않는다.
+ * 호환성을 위해 남겨두고, 신규 코드/테마-반응이 필요한 곳은 `useColors()` 사용.
  *
- * - `ink`는 모든 보더 + stepped 그림자에 공통 사용 (Phase 12.C 도입).
- * - `hp/mp/xp/stamina`는 게임 게이지 색. 카테고리 색은 톤별 매핑(아래).
- *
- * 추후 Butter / Grove 테마 추가 시 이 객체를 함수가 반환하도록 확장하면 됨.
+ * Phase 12.F부터: 컴포넌트 내부에서 색을 쓸 땐 반드시 `const COLORS = useColors();`로 받아쓰기.
+ * 모듈 레벨/유틸 함수에선 기본 팔레트(Midnight) 색이 그대로 쓰임 — 라이트 테마에서도 잉크/그림자
+ * 같은 디테일이 어색하지 않은지 확인 필요.
  */
-export const COLORS = {
-  // Surfaces
-  bg: "#1E1A2E", // 플럼 네이비
-  bgSoft: "#2B2640",
-  bgSofter: "#3A3352",
-  bgSunken: "#141020",
+export const COLORS: Palette = MIDNIGHT_PALETTE;
 
-  // Text
-  text: "#F5F0FF",
-  textMuted: "#A89EC8",
-  textSubtle: "#6B6288",
-
-  // Brand (버터 골드)
-  gold: "#FFD66B",
-  goldDark: "#FFB84D",
-  goldSoft: "#4A3A00", // brand-soft (다크 톤에선 어두운 골드 스미어)
-
-  // Border + shadow 공용 잉크
-  ink: "#0F0A1A",
-  inkShadow: "#0A0614",
-
-  // Game stats
-  hp: "#FF8FA8",
-  mp: "#8FCFFF",
-  xp: "#FFD66B",
-  stamina: "#8EE4A8",
-
-  // Semantic
-  success: "#8EE4A8",
-  warning: "#FFB84D",
-  danger: "#FF8FA8",
-  info: "#8FCFFF",
-
-  // Rarity (추후 인벤토리/업적용)
-  rarity: {
-    common: "#A89EC8",
-    uncommon: "#8EE4A8",
-    rare: "#8FCFFF",
-    epic: "#D4A8F5",
-    legendary: "#FFB84D",
-  },
-
-  // Category 매핑 (HP/MP/Epic/Stamina 톤)
-  category: {
-    exercise: "#FF8FA8", // HP
-    study: "#8FCFFF", // MP
-    creative: "#D4A8F5", // Epic
-    productivity: "#8EE4A8", // Stamina
-  } satisfies Record<CategoryKey, string>,
-} as const;
+/** 현재 활성 팔레트를 구독한다. 테마 변경 시 자동 재렌더. */
+export function useColors(): Palette {
+  return useThemeStore((s) => s.palette);
+}
 
 export type { CategoryKey } from "./categories";

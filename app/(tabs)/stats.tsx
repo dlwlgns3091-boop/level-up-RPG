@@ -5,7 +5,7 @@ import { PIXEL_FONT } from "@/components/pixelStyles";
 import { CATEGORIES, CATEGORY_LABELS_KO } from "@/constants/categories";
 import { getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 import { pickCategoryXp } from "@/types/category";
 

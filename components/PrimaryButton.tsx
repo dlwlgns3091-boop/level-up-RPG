@@ -1,6 +1,7 @@
 import { type ReactNode, useRef } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
+import type { Palette } from "@/constants/themes";
 import {
   PIXEL_BORDER_WIDTH,
   PIXEL_FONT,
@@ -24,23 +25,20 @@ type VariantStyle = {
   border: string;
 };
 
-const VARIANT_STYLE: Record<Variant, VariantStyle> = {
-  primary: {
-    bg: COLORS.gold,
-    label: COLORS.ink,
-    border: COLORS.ink,
-  },
-  secondary: {
-    bg: COLORS.bgSoft,
-    label: COLORS.text,
-    border: COLORS.ink,
-  },
-  ghost: {
-    bg: "transparent",
-    label: COLORS.textMuted,
-    border: "transparent",
-  },
-};
+function variantStyleFor(palette: Palette, variant: Variant): VariantStyle {
+  switch (variant) {
+    case "primary":
+      return { bg: palette.gold, label: palette.ink, border: palette.ink };
+    case "secondary":
+      return { bg: palette.bgSoft, label: palette.text, border: palette.ink };
+    case "ghost":
+      return {
+        bg: "transparent",
+        label: palette.textMuted,
+        border: "transparent",
+      };
+  }
+}
 
 const PRESS_TRANSLATE = 3;
 const PRESS_DURATION = 80;
@@ -52,7 +50,8 @@ export function PrimaryButton({
   disabled = false,
   leftIcon,
 }: Props) {
-  const v = VARIANT_STYLE[variant];
+  const COLORS = useColors();
+  const v = variantStyleFor(COLORS, variant);
   const translateY = useRef(new Animated.Value(0)).current;
 
   const animatePress = (toValue: number) =>
@@ -82,7 +81,7 @@ export function PrimaryButton({
           alignItems: "center",
           justifyContent: "center",
           opacity: disabled ? 0.6 : 1,
-          ...(showShadow ? steppedShadow(4) : null),
+          ...(showShadow ? steppedShadow(COLORS.ink, 4) : null),
         }}
       >
         {leftIcon ? <View style={{ marginRight: 8 }}>{leftIcon}</View> : null}

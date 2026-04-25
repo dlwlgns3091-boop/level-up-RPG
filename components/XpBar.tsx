@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import { PIXEL_BORDER_WIDTH, PIXEL_FONT, PIXEL_RADIUS } from "./pixelStyles";
 
 type Props = {
@@ -19,7 +19,9 @@ type Props = {
 
 const BAR_HEIGHT = 18;
 
-export function XpBar({ current, need, ratio, color = COLORS.xp }: Props) {
+export function XpBar({ current, need, ratio, color }: Props) {
+  const COLORS = useColors();
+  const fillColor = color ?? COLORS.xp;
   const percent = useSharedValue(Math.min(100, Math.max(0, ratio * 100)));
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export function XpBar({ current, need, ratio, color = COLORS.xp }: Props) {
           style={[
             {
               height: "100%",
-              backgroundColor: color,
+              backgroundColor: fillColor,
               borderRadius: PIXEL_RADIUS.pill,
             },
             animatedStyle,

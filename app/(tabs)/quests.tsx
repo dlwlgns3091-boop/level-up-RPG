@@ -9,7 +9,7 @@ import { QuestRow } from "@/components/QuestRow";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { WeeklyQuestRow } from "@/components/WeeklyQuestRow";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import {
   countLogsForTemplateBetween,
   getKstDayBounds,

@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import Svg, { Circle, Line, Polygon, Text as SvgText } from "react-native-svg";
 import { CATEGORIES } from "@/constants/categories";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import { PIXEL_FONT } from "@/components/pixelStyles";
 import type { CategoryXP } from "@/types/category";
 
@@ -21,6 +21,7 @@ function angleRad(idx: number): number {
 }
 
 export function DiamondChart({ stats, size = 240 }: Props) {
+  const COLORS = useColors();
   const padding = 36;
   const radius = size / 2 - padding;
   const cx = size / 2;

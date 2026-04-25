@@ -1,5 +1,4 @@
 import { Platform, type ViewStyle } from "react-native";
-import { COLORS } from "@/constants/theme";
 
 /** Phase 12.C에서 도입한 픽셀 토큰. tailwind 토큰과 1:1 동기화. */
 export const PIXEL_RADIUS = {
@@ -30,14 +29,17 @@ export const PIXEL_FONT = {
  * - iOS: 네이티브 shadow* (`shadowRadius: 0` = 하드 그림자).
  * - Android: shadow*가 무시되므로 elevation도 0으로 고정해 머티리얼 부드러운
  *   그림자가 끼는 것을 방지. 카드의 2px 잉크 보더가 시각적 정의를 대신 함.
- *   (필요 시 추후 absolute 레이어 트릭으로 강화 가능.)
+ *
+ * Phase 12.F부터: ink는 호출부에서 현재 테마 팔레트로 주입.
+ *   const COLORS = useColors();
+ *   style={steppedShadow(COLORS.ink, 4)}
  */
-export function steppedShadow(offsetY = 4): ViewStyle {
+export function steppedShadow(ink: string, offsetY = 4): ViewStyle {
   if (Platform.OS === "android") {
     return { elevation: 0 };
   }
   return {
-    shadowColor: COLORS.ink,
+    shadowColor: ink,
     shadowOffset: { width: 0, height: offsetY },
     shadowOpacity: 1,
     shadowRadius: 0,
@@ -45,18 +47,25 @@ export function steppedShadow(offsetY = 4): ViewStyle {
 }
 
 /** 자주 쓰는 픽셀 프레임(2px ink 보더 + 라운드) 베이스. 배경색은 호출부에서. */
-export function pixelFrame(radius: number = PIXEL_RADIUS.lg): ViewStyle {
+export function pixelFrame(
+  ink: string,
+  radius: number = PIXEL_RADIUS.lg,
+): ViewStyle {
   return {
     borderWidth: PIXEL_BORDER_WIDTH,
-    borderColor: COLORS.ink,
+    borderColor: ink,
     borderRadius: radius,
   };
 }
 
 /** 카드 표준: 픽셀 프레임 + stepped 그림자. */
-export function pixelCard(radius: number = PIXEL_RADIUS.lg, offsetY = 4): ViewStyle {
+export function pixelCard(
+  ink: string,
+  radius: number = PIXEL_RADIUS.lg,
+  offsetY = 4,
+): ViewStyle {
   return {
-    ...pixelFrame(radius),
-    ...steppedShadow(offsetY),
+    ...pixelFrame(ink, radius),
+    ...steppedShadow(ink, offsetY),
   };
 }

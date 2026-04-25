@@ -5,7 +5,7 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 import { PIXEL_BORDER_WIDTH, PIXEL_FONT, PIXEL_RADIUS } from "@/components/pixelStyles";
 import { ApprenticeCodex } from "@/components/sprites";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 
 export default function Welcome() {
   const router = useRouter();

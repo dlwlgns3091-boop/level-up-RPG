@@ -19,7 +19,7 @@ import { PrimaryButton } from "@/components/PrimaryButton";
 import { PIXEL_FONT } from "@/components/pixelStyles";
 import { HeartIcon } from "@/components/sprites";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { daysSince } from "@/lib/couples";
 import { useOnlineStatus } from "@/lib/network";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase";

@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 import { FlagIcon, StarIcon } from "@/components/sprites";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import { calculateStreakBonus } from "@/db/streak";
 import type { Streak } from "@/db/types";
 import {
@@ -15,6 +15,7 @@ type Props = {
 };
 
 export function StreakBadge({ streak }: Props) {
+  const COLORS = useColors();
   const days = streak.current_streak;
   const longest = streak.longest_streak;
 
@@ -29,7 +30,7 @@ export function StreakBadge({ streak }: Props) {
           borderWidth: PIXEL_BORDER_WIDTH,
           borderColor: COLORS.ink,
           backgroundColor: COLORS.bgSoft,
-          ...steppedShadow(3),
+          ...steppedShadow(COLORS.ink, 3),
         }}
       >
         <View style={{ marginRight: 10 }}>
@@ -73,7 +74,7 @@ export function StreakBadge({ streak }: Props) {
         borderWidth: PIXEL_BORDER_WIDTH,
         borderColor: COLORS.ink,
         backgroundColor: COLORS.bgSoft,
-        ...steppedShadow(3),
+        ...steppedShadow(COLORS.ink, 3),
       }}
     >
       <View

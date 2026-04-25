@@ -1,7 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 //
-// Midnight Arcade 팔레트 (Phase 12.A).
-// 값은 constants/theme.ts의 COLORS와 1:1 동기화. 둘 중 한 곳만 바뀌지 않도록 함께 수정.
+// Phase 12.A 기본 색은 Midnight Arcade. Phase 12.F (테마 토글) 도입 후
+// 모든 색을 CSS 변수 var(--color-X)로 참조한다 — 루트 View에 `paletteToVars(palette)`를
+// 깔면 var()가 런타임 팔레트로 해석되어 `bg-bg`, `text-gold` 같은 클래스가 자동으로
+// 테마에 따라 갈아탄다.
+//
+// 변수 이름 ↔ JS 키 매핑:
+//   --color-bg            <-> palette.bg
+//   --color-bg-soft       <-> palette.bgSoft
+//   --color-bg-softer     <-> palette.bgSofter
+//   --color-text          <-> palette.text
+//   --color-text-muted    <-> palette.textMuted
+//   --color-gold          <-> palette.gold
+//   --color-ink           <-> palette.ink
+//   ...
+// (lib/themeVars.ts의 paletteToVars()와 함께 수정할 것)
 //
 module.exports = {
   content: [
@@ -14,52 +27,52 @@ module.exports = {
       colors: {
         // Surfaces
         bg: {
-          DEFAULT: "#1E1A2E",
-          soft: "#2B2640",
-          softer: "#3A3352",
-          sunken: "#141020",
+          DEFAULT: "var(--color-bg)",
+          soft: "var(--color-bg-soft)",
+          softer: "var(--color-bg-softer)",
+          sunken: "var(--color-bg-sunken)",
         },
         // Text
         text: {
-          DEFAULT: "#F5F0FF",
-          muted: "#A89EC8",
-          subtle: "#6B6288",
+          DEFAULT: "var(--color-text)",
+          muted: "var(--color-text-muted)",
+          subtle: "var(--color-text-subtle)",
         },
         // Brand
         gold: {
-          DEFAULT: "#FFD66B",
-          dark: "#FFB84D",
-          soft: "#4A3A00",
+          DEFAULT: "var(--color-gold)",
+          dark: "var(--color-gold-dark)",
+          soft: "var(--color-gold-soft)",
         },
         // Border + shadow 공용
         ink: {
-          DEFAULT: "#0F0A1A",
-          shadow: "#0A0614",
+          DEFAULT: "var(--color-ink)",
+          shadow: "var(--color-ink-shadow)",
         },
         // Game stats
-        hp: "#FF8FA8",
-        mp: "#8FCFFF",
-        xp: "#FFD66B",
-        stamina: "#8EE4A8",
+        hp: "var(--color-hp)",
+        mp: "var(--color-mp)",
+        xp: "var(--color-xp)",
+        stamina: "var(--color-stamina)",
         // Semantic
-        success: "#8EE4A8",
-        warning: "#FFB84D",
-        danger: "#FF8FA8",
-        info: "#8FCFFF",
+        success: "var(--color-success)",
+        warning: "var(--color-warning)",
+        danger: "var(--color-danger)",
+        info: "var(--color-info)",
         // Rarity
         rarity: {
-          common: "#A89EC8",
-          uncommon: "#8EE4A8",
-          rare: "#8FCFFF",
-          epic: "#D4A8F5",
-          legendary: "#FFB84D",
+          common: "var(--color-rarity-common)",
+          uncommon: "var(--color-rarity-uncommon)",
+          rare: "var(--color-rarity-rare)",
+          epic: "var(--color-rarity-epic)",
+          legendary: "var(--color-rarity-legendary)",
         },
         // Category
         category: {
-          exercise: "#FF8FA8",
-          study: "#8FCFFF",
-          creative: "#D4A8F5",
-          productivity: "#8EE4A8",
+          exercise: "var(--color-category-exercise)",
+          study: "var(--color-category-study)",
+          creative: "var(--color-category-creative)",
+          productivity: "var(--color-category-productivity)",
         },
       },
       borderRadius: {
@@ -71,9 +84,6 @@ module.exports = {
       borderWidth: {
         pixel: "2px",
       },
-      // Phase 12.A에서 폰트 패밀리 토큰만 등록.
-      // 실제 .ttf는 사용자가 assets/fonts/에 드롭한 뒤 lib/fonts.ts의 require()를 활성화해야 적용됨.
-      // 미적용 상태에서는 RN이 system 폰트로 fallback (앱 크래시 없음).
       fontFamily: {
         "pixel-display": ["DungGeunMo", "monospace"],
         "pixel-ui": ["Galmuri11", "monospace"],

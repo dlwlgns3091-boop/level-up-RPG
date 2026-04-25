@@ -8,7 +8,7 @@ import {
 } from "@/components/sprites";
 import { PIXEL_BORDER_WIDTH, PIXEL_FONT } from "@/components/pixelStyles";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 
 export default function TabsLayout() {
   return (

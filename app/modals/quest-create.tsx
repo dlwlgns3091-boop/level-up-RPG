@@ -18,7 +18,7 @@ import {
   type CategoryKey,
 } from "@/constants/categories";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
+import { COLORS, useColors } from "@/constants/theme";
 import { createTemplate } from "@/db/quest";
 import type { QuestType } from "@/db/types";
 

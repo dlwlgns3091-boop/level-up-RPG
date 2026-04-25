@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import {
   PIXEL_BORDER_WIDTH,
   PIXEL_FONT,
@@ -22,6 +22,7 @@ export function SegmentedTabs<K extends string>({
   value,
   onChange,
 }: Props<K>) {
+  const COLORS = useColors();
   return (
     <View
       style={{

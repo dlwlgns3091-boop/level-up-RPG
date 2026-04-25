@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 import { FlagIcon, TrophyIcon } from "@/components/sprites";
 import { CATEGORY_LABELS_KO } from "@/constants/categories";
-import { COLORS } from "@/constants/theme";
+import { useColors } from "@/constants/theme";
 import type { QuestTemplate } from "@/db/types";
 import {
   PIXEL_BORDER_WIDTH,
@@ -23,6 +23,7 @@ export function WeeklyQuestRow({
   onPress,
   onLongPress,
 }: Props) {
+  const COLORS = useColors();
   const color = COLORS.category[template.category];
 
   return (
@@ -39,7 +40,7 @@ export function WeeklyQuestRow({
         borderWidth: PIXEL_BORDER_WIDTH,
         borderColor: COLORS.ink,
         backgroundColor: COLORS.bgSoft,
-        ...steppedShadow(3),
+        ...steppedShadow(COLORS.ink, 3),
       }}
     >
       <View
