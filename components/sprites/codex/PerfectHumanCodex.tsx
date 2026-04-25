@@ -1,0 +1,94 @@
+import Svg, { Rect } from "react-native-svg";
+
+type Props = { size?: number };
+
+/** Generated from characters_hd.html (#h-perfect) — perfect_human */
+export function PerfectHumanCodex({ size = 96 }: Props) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 32 32">
+      <Rect x={9} y={0} width={14} height={1} fill="#FFD066" />
+      <Rect x={8} y={1} width={1} height={1} fill="#FFE8A8" />
+      <Rect x={23} y={1} width={1} height={1} fill="#FFE8A8" />
+      <Rect x={7} y={0} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={24} y={0} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={11} y={0} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={20} y={0} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={10} y={2} width={2} height={2} fill="#FFD066" />
+      <Rect x={13} y={1} width={2} height={3} fill="#FFD066" />
+      <Rect x={15} y={2} width={2} height={2} fill="#FFD066" />
+      <Rect x={17} y={1} width={2} height={3} fill="#FFD066" />
+      <Rect x={20} y={2} width={2} height={2} fill="#FFD066" />
+      <Rect x={9} y={4} width={14} height={2} fill="#FFD066" />
+      <Rect x={9} y={4} width={14} height={1} fill="#FFE8A8" />
+      <Rect x={13} y={2} width={2} height={1} fill="#E85A5A" />
+      <Rect x={15} y={3} width={2} height={1} fill="#A8C9F5" />
+      <Rect x={17} y={2} width={2} height={1} fill="#A8F5C9" />
+      <Rect x={7} y={6} width={18} height={2} fill="#FFD066" />
+      <Rect x={6} y={8} width={2} height={4} fill="#FFD066" />
+      <Rect x={24} y={8} width={2} height={4} fill="#FFD066" />
+      <Rect x={6} y={8} width={1} height={4} fill="#E8A83C" />
+      <Rect x={25} y={8} width={1} height={4} fill="#E8A83C" />
+      <Rect x={9} y={7} width={14} height={1} fill="#FFF5DD" />
+      <Rect x={9} y={8} width={14} height={8} fill="#FFE5BB" />
+      <Rect x={9} y={8} width={1} height={8} fill="#F5D090" />
+      <Rect x={22} y={8} width={1} height={8} fill="#F5D090" />
+      <Rect x={11} y={9} width={3} height={1} fill="#FFF5DD" />
+      <Rect x={18} y={9} width={3} height={1} fill="#FFF5DD" />
+      <Rect x={11} y={10} width={4} height={1} fill="#E8A83C" />
+      <Rect x={17} y={10} width={4} height={1} fill="#E8A83C" />
+      <Rect x={12} y={11} width={2} height={2} fill="#2B1F3A" />
+      <Rect x={18} y={11} width={2} height={2} fill="#2B1F3A" />
+      <Rect x={12} y={11} width={1} height={1} fill="#FFD066" />
+      <Rect x={18} y={11} width={1} height={1} fill="#FFD066" />
+      <Rect x={13} y={12} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={19} y={12} width={1} height={1} fill="#FFFFFF" />
+      <Rect x={10} y={14} width={2} height={1} fill="#FFB8C4" />
+      <Rect x={20} y={14} width={2} height={1} fill="#FFB8C4" />
+      <Rect x={14} y={15} width={4} height={1} fill="#E85A5A" />
+      <Rect x={15} y={14} width={2} height={1} fill="#FFB8C4" />
+      <Rect x={14} y={16} width={4} height={1} fill="#F5D090" />
+      <Rect x={5} y={17} width={22} height={12} fill="#FFFFFF" />
+      <Rect x={5} y={17} width={1} height={12} fill="#F5E5BB" />
+      <Rect x={26} y={17} width={1} height={12} fill="#F5E5BB" />
+      <Rect x={9} y={17} width={14} height={2} fill="#FFD066" />
+      <Rect x={14} y={17} width={4} height={2} fill="#FFFFFF" />
+      <Rect x={9} y={17} width={14} height={1} fill="#FFE8A8" />
+      <Rect x={13} y={20} width={2} height={1} fill="#FFD066" />
+      <Rect x={17} y={20} width={2} height={1} fill="#FFD066" />
+      <Rect x={12} y={21} width={4} height={2} fill="#FFD066" />
+      <Rect x={16} y={21} width={4} height={2} fill="#FFD066" />
+      <Rect x={13} y={23} width={6} height={1} fill="#FFD066" />
+      <Rect x={14} y={24} width={4} height={1} fill="#FFD066" />
+      <Rect x={15} y={25} width={2} height={1} fill="#FFD066" />
+      <Rect x={14} y={22} width={4} height={1} fill="#FFE8A8" />
+      <Rect x={5} y={27} width={22} height={1} fill="#FFD066" />
+      <Rect x={5} y={29} width={22} height={1} fill="#FFD066" />
+      <Rect x={0} y={14} width={1} height={2} fill="#FFFFFF" />
+      <Rect x={0} y={16} width={2} height={2} fill="#FFFFFF" />
+      <Rect x={1} y={18} width={3} height={2} fill="#FFFFFF" />
+      <Rect x={2} y={20} width={3} height={2} fill="#FFFFFF" />
+      <Rect x={3} y={22} width={2} height={2} fill="#FFFFFF" />
+      <Rect x={1} y={16} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={2} y={18} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={3} y={20} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={4} y={22} width={1} height={2} fill="#FFD066" />
+      <Rect x={31} y={14} width={1} height={2} fill="#FFFFFF" />
+      <Rect x={30} y={16} width={2} height={2} fill="#FFFFFF" />
+      <Rect x={28} y={18} width={3} height={2} fill="#FFFFFF" />
+      <Rect x={27} y={20} width={3} height={2} fill="#FFFFFF" />
+      <Rect x={27} y={22} width={2} height={2} fill="#FFFFFF" />
+      <Rect x={30} y={16} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={29} y={18} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={28} y={20} width={1} height={2} fill="#F5E5BB" />
+      <Rect x={27} y={22} width={1} height={2} fill="#FFD066" />
+      <Rect x={3} y={18} width={2} height={7} fill="#FFFFFF" />
+      <Rect x={27} y={18} width={2} height={7} fill="#FFFFFF" />
+      <Rect x={3} y={25} width={2} height={1} fill="#FFECD4" />
+      <Rect x={27} y={25} width={2} height={1} fill="#FFECD4" />
+      <Rect x={9} y={30} width={5} height={2} fill="#FFFFFF" />
+      <Rect x={18} y={30} width={5} height={2} fill="#FFFFFF" />
+      <Rect x={9} y={31} width={5} height={1} fill="#FFD066" />
+      <Rect x={18} y={31} width={5} height={1} fill="#FFD066" />
+    </Svg>
+  );
+}

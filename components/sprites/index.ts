@@ -21,4 +21,6 @@ export { HomeIcon } from "./HomeIcon";
 export { PersonIcon } from "./PersonIcon";
 export { ClassSprite, classToSprite } from "./ClassSprite";
 export { CategoryIcon } from "./CategoryIcon";
+export * from "./codex";
+
 

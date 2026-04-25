@@ -1,40 +1,52 @@
-import { CLASS_BY_ID, type ClassId } from "@/constants/classes";
+import { type ClassId } from "@/constants/classes";
 import {
-  ArcherSprite,
-  KnightSprite,
-  SlimeSprite,
-  WizardSprite,
-} from "./index";
+  ApprenticeCodex,
+  DigitalWizardCodex,
+  GodsaengHunterCodex,
+  IndieHackerCodex,
+  IronHeartCodex,
+  LibrarianKingCodex,
+  LifeAthleteCodex,
+  PerfectHumanCodex,
+  PhysicalArtistCodex,
+  PixelMasterCodex,
+  ProjectMageCodex,
+  RenaissanceCodex,
+  SpartaScholarCodex,
+  StoryMageCodex,
+  StreetArtistCodex,
+  TimeHackerCodex,
+} from "./codex";
 
 /**
- * 16개 자동 직업을 4개 픽셀 캐릭터에 매핑.
+ * 16 ClassId → 16 HD 코덱스 스프라이트 1:1 매핑.
+ * (이전 4개로 줄여 매핑하던 버전은 폐기됨.)
  *
- * 매핑 규칙: 각 직업의 primary 카테고리들 중 하나가 어느 캐릭터 톤에 가까운지로 결정.
- *   - exercise (몸)         -> KnightSprite
- *   - study   (지식)         -> WizardSprite
- *   - creative (창작)        -> WizardSprite (마법사가 별 + 보라톤이라 "창작" 비주얼과도 어울림)
- *   - productivity (실행)    -> ArcherSprite
- *   - apprentice / 균형형    -> SlimeSprite
- *
- * 두 카테고리가 충돌할 땐 primary 배열의 첫 번째를 채택.
+ * 각 코덱스 스프라이트는 32×32 픽셀 viewBox에 그려져 있으며 정사각형 size 한 값으로 호출.
  */
-const PRIMARY_TO_SPRITE = {
-  exercise: KnightSprite,
-  study: WizardSprite,
-  creative: WizardSprite,
-  productivity: ArcherSprite,
-} as const;
+const CODEX_BY_CLASS = {
+  apprentice: ApprenticeCodex,
+  iron_heart: IronHeartCodex,
+  librarian_king: LibrarianKingCodex,
+  pixel_master: PixelMasterCodex,
+  time_hacker: TimeHackerCodex,
+  sparta_scholar: SpartaScholarCodex,
+  physical_artist: PhysicalArtistCodex,
+  life_athlete: LifeAthleteCodex,
+  story_mage: StoryMageCodex,
+  project_mage: ProjectMageCodex,
+  indie_hacker: IndieHackerCodex,
+  renaissance: RenaissanceCodex,
+  godsaeng_hunter: GodsaengHunterCodex,
+  street_artist: StreetArtistCodex,
+  digital_wizard: DigitalWizardCodex,
+  perfect_human: PerfectHumanCodex,
+} as const satisfies Record<ClassId, unknown>;
 
-type SpriteComponent = typeof KnightSprite;
+type SpriteComponent = (typeof CODEX_BY_CLASS)[ClassId];
 
 export function classToSprite(classId: ClassId): SpriteComponent {
-  if (classId === "apprentice" || classId === "perfect_human") {
-    return SlimeSprite;
-  }
-  const def = CLASS_BY_ID[classId];
-  const first = def?.primary[0];
-  if (!first) return SlimeSprite;
-  return PRIMARY_TO_SPRITE[first] ?? SlimeSprite;
+  return CODEX_BY_CLASS[classId] ?? ApprenticeCodex;
 }
 
 type Props = {
@@ -42,7 +54,7 @@ type Props = {
   size?: number;
 };
 
-/** 직업 아이디를 받아 해당 캐릭터 스프라이트를 그린다. */
+/** 직업 아이디를 받아 해당 HD 코덱스 캐릭터를 그린다. */
 export function ClassSprite({ classId, size = 64 }: Props) {
   const Comp = classToSprite(classId);
   return <Comp size={size} />;
