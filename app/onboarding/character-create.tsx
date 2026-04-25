@@ -9,6 +9,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import {
+  PIXEL_BORDER_WIDTH,
+  PIXEL_FONT,
+  PIXEL_RADIUS,
+  pixelCard,
+} from "@/components/pixelStyles";
+import { CategoryIcon } from "@/components/sprites";
 import { CATEGORIES } from "@/constants/categories";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
@@ -41,35 +48,94 @@ export default function CharacterCreate() {
         className="flex-1"
       >
         <View className="flex-1 px-6 pt-6">
-          <Text className="text-2xl font-bold text-text">
+          <Text
+            style={{
+              fontFamily: PIXEL_FONT.uiBold,
+              fontSize: 20,
+              color: COLORS.text,
+            }}
+          >
             {STRINGS.onboarding.nameInputTitle}
           </Text>
-          <Text className="mt-2 text-sm text-text-muted">
+          <Text
+            style={{
+              marginTop: 8,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 12,
+              color: COLORS.textMuted,
+            }}
+          >
             직업은 선택하지 않습니다. 활동에 따라 자동으로 각성됩니다.
           </Text>
 
-          <View className="mt-6 rounded-2xl border border-bg-softer bg-bg-soft p-4">
-            <Text className="mb-2 text-xs text-text-muted">4개 영역</Text>
-            <View className="flex-row flex-wrap">
+          <View
+            style={{
+              marginTop: 24,
+              padding: 14,
+              backgroundColor: COLORS.bgSoft,
+              ...pixelCard(PIXEL_RADIUS.lg, 4),
+            }}
+          >
+            <Text
+              style={{
+                marginBottom: 10,
+                fontFamily: PIXEL_FONT.uiBold,
+                fontSize: 11,
+                color: COLORS.textMuted,
+                letterSpacing: 0.4,
+              }}
+            >
+              4개 영역
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+              }}
+            >
               {CATEGORIES.map((c) => (
                 <View
                   key={c.key}
-                  className="mb-2 mr-2 rounded-full px-3 py-1.5"
-                  style={{ backgroundColor: `${c.color}33` }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginRight: 8,
+                    marginBottom: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: PIXEL_RADIUS.pill,
+                    borderWidth: PIXEL_BORDER_WIDTH,
+                    borderColor: COLORS.ink,
+                    backgroundColor: `${c.color}33`,
+                  }}
                 >
+                  <CategoryIcon category={c.key} size={14} />
                   <Text
-                    className="text-xs font-semibold"
-                    style={{ color: c.color }}
+                    style={{
+                      marginLeft: 6,
+                      fontFamily: PIXEL_FONT.uiBold,
+                      fontSize: 11,
+                      color: c.color,
+                    }}
                   >
-                    {c.emoji} {c.nameKo}
+                    {c.nameKo}
                   </Text>
                 </View>
               ))}
             </View>
           </View>
 
-          <View className="mt-6">
-            <Text className="mb-2 text-sm text-text-muted">캐릭터 이름</Text>
+          <View style={{ marginTop: 24 }}>
+            <Text
+              style={{
+                marginBottom: 8,
+                fontFamily: PIXEL_FONT.uiBold,
+                fontSize: 12,
+                color: COLORS.textMuted,
+              }}
+            >
+              캐릭터 이름
+            </Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -80,15 +146,41 @@ export default function CharacterCreate() {
               autoCorrect={false}
               returnKeyType="done"
               onSubmitEditing={handleSubmit}
-              className="rounded-2xl border border-bg-softer bg-bg-soft px-4 py-4 text-base text-text"
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                borderRadius: PIXEL_RADIUS.md,
+                borderWidth: PIXEL_BORDER_WIDTH,
+                borderColor: COLORS.ink,
+                backgroundColor: COLORS.bgSoft,
+                fontFamily: PIXEL_FONT.uiBold,
+                fontSize: 16,
+                color: COLORS.text,
+              }}
             />
-            <Text className="mt-2 text-xs text-text-muted">
+            <Text
+              style={{
+                marginTop: 6,
+                fontFamily: PIXEL_FONT.ui,
+                fontSize: 11,
+                color: COLORS.textSubtle,
+              }}
+            >
               {trimmed.length}/16자
             </Text>
           </View>
         </View>
 
-        <View className="border-t border-bg-softer bg-bg px-6 pt-4 pb-6">
+        <View
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: 24,
+            borderTopWidth: PIXEL_BORDER_WIDTH,
+            borderTopColor: COLORS.ink,
+            backgroundColor: COLORS.bg,
+          }}
+        >
           <PrimaryButton
             label={STRINGS.onboarding.nameInputCta}
             disabled={!isValid || submitting}

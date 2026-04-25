@@ -1,10 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { COLORS } from "@/constants/theme";
+import { PIXEL_BORDER_WIDTH, PIXEL_FONT, PIXEL_RADIUS } from "@/components/pixelStyles";
+import { ApprenticeCodex } from "@/components/sprites";
 import { STRINGS } from "@/constants/strings.ko";
+import { COLORS } from "@/constants/theme";
 
 export default function Welcome() {
   const router = useRouter();
@@ -12,24 +13,66 @@ export default function Welcome() {
   return (
     <SafeAreaView className="flex-1 bg-bg">
       <View className="flex-1 items-center justify-center px-6">
+        {/* 캐릭터 카드 */}
         <View
-          className="mb-8 h-24 w-24 items-center justify-center rounded-3xl"
-          style={{ backgroundColor: `${COLORS.gold}22` }}
+          style={{
+            marginBottom: 24,
+            width: 144,
+            height: 144,
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: PIXEL_BORDER_WIDTH,
+            borderColor: COLORS.ink,
+            borderRadius: PIXEL_RADIUS.lg,
+            backgroundColor: COLORS.bgSoft,
+          }}
         >
-          <Ionicons name="sparkles" size={48} color={COLORS.gold} />
+          <ApprenticeCodex size={120} />
         </View>
 
-        <Text className="mb-2 text-4xl font-bold text-gold">
+        <Text
+          style={{
+            fontFamily: PIXEL_FONT.display,
+            fontSize: 32,
+            color: COLORS.gold,
+            letterSpacing: 1,
+            marginBottom: 6,
+          }}
+        >
           {STRINGS.app.name}
         </Text>
-        <Text className="mb-12 text-base text-text-muted">
+        <Text
+          style={{
+            fontFamily: PIXEL_FONT.ui,
+            fontSize: 12,
+            color: COLORS.textMuted,
+            marginBottom: 36,
+          }}
+        >
           {STRINGS.app.tagline}
         </Text>
 
-        <Text className="mb-3 text-2xl font-semibold text-text">
+        <Text
+          style={{
+            fontFamily: PIXEL_FONT.uiBold,
+            fontSize: 18,
+            color: COLORS.text,
+            marginBottom: 12,
+            textAlign: "center",
+          }}
+        >
           {STRINGS.onboarding.welcomeTitle}
         </Text>
-        <Text className="mb-12 text-center text-base leading-6 text-text-muted">
+        <Text
+          style={{
+            fontFamily: PIXEL_FONT.ui,
+            fontSize: 13,
+            lineHeight: 20,
+            color: COLORS.textMuted,
+            textAlign: "center",
+            marginBottom: 40,
+          }}
+        >
           {STRINGS.onboarding.welcomeBody}
         </Text>
 
