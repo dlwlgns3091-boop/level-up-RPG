@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { successFeedback, tapFeedback } from "@/lib/haptic";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PIXEL_FONT } from "@/components/pixelStyles";
 import { QuestRow } from "@/components/QuestRow";
 import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { WeeklyQuestRow } from "@/components/WeeklyQuestRow";
@@ -118,7 +119,15 @@ export default function Quests() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={["top", "left", "right"]}>
       <View className="px-5 pt-4">
-        <Text className="mb-3 text-2xl font-bold text-gold">
+        <Text
+          style={{
+            marginBottom: 12,
+            fontFamily: PIXEL_FONT.display,
+            fontSize: 26,
+            color: COLORS.gold,
+            letterSpacing: 1,
+          }}
+        >
           {STRINGS.tabs.quests}
         </Text>
         <SegmentedTabs options={TABS} value={active} onChange={setActive} />

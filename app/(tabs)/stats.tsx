@@ -1,9 +1,11 @@
 import { Text, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DiamondChart } from "@/components/DiamondChart";
+import { PIXEL_FONT } from "@/components/pixelStyles";
 import { CATEGORIES, CATEGORY_LABELS_KO } from "@/constants/categories";
 import { getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
+import { COLORS } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 import { pickCategoryXp } from "@/types/category";
 
@@ -30,7 +32,15 @@ export default function Stats() {
         className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       >
-        <Text className="mb-2 text-2xl font-bold text-gold">
+        <Text
+          style={{
+            marginBottom: 12,
+            fontFamily: PIXEL_FONT.display,
+            fontSize: 26,
+            color: COLORS.gold,
+            letterSpacing: 1,
+          }}
+        >
           {STRINGS.stats.title}
         </Text>
 

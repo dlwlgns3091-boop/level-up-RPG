@@ -16,6 +16,8 @@ import {
 import { Calendar as RNCalendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { PIXEL_FONT } from "@/components/pixelStyles";
+import { HeartIcon } from "@/components/sprites";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
 import { daysSince } from "@/lib/couples";
@@ -108,9 +110,19 @@ export default function CoupleTab() {
 
 function Header() {
   return (
-    <View className="px-5 pt-4 pb-2">
-      <Text className="text-2xl font-bold text-gold">
-        💑 {STRINGS.tabs.couple}
+    <View className="flex-row items-center px-5 pt-4 pb-2">
+      <View style={{ marginRight: 8 }}>
+        <HeartIcon size={22} />
+      </View>
+      <Text
+        style={{
+          fontFamily: PIXEL_FONT.display,
+          fontSize: 26,
+          color: COLORS.gold,
+          letterSpacing: 1,
+        }}
+      >
+        {STRINGS.tabs.couple}
       </Text>
     </View>
   );
@@ -192,11 +204,26 @@ function UnconnectedView({ busy }: { busy: boolean }) {
         keyboardShouldPersistTaps="handled"
       >
         <View className="mb-6 items-center">
-          <Ionicons name="heart" size={48} color={COLORS.gold} />
-          <Text className="mt-3 text-lg font-semibold text-text">
+          <HeartIcon size={48} />
+          <Text
+            style={{
+              marginTop: 12,
+              fontFamily: PIXEL_FONT.uiBold,
+              fontSize: 18,
+              color: COLORS.text,
+            }}
+          >
             커플 연결
           </Text>
-          <Text className="mt-1 text-center text-sm text-text-muted">
+          <Text
+            style={{
+              marginTop: 4,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 12,
+              color: COLORS.textMuted,
+              textAlign: "center",
+            }}
+          >
             한 명이 코드를 만들고, 다른 한 명이 그 코드를 입력하세요.
           </Text>
         </View>

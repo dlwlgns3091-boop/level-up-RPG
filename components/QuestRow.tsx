@@ -1,4 +1,13 @@
+import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { CategoryIcon, CheckIcon } from "@/components/sprites";
 import { CATEGORY_LABELS_KO } from "@/constants/categories";
 import { COLORS } from "@/constants/theme";
@@ -18,9 +27,34 @@ type Props = {
 };
 
 const ICON_BOX = 44;
+const CHECK_BOX = 28;
 
 export function QuestRow({ template, done, disabled = false, onPress }: Props) {
   const color = COLORS.category[template.category];
+
+  const checkScale = useSharedValue(done ? 1 : 0);
+  const checkOpacity = useSharedValue(done ? 1 : 0);
+
+  useEffect(() => {
+    if (done) {
+      checkOpacity.value = withDelay(80, withTiming(1, { duration: 180 }));
+      checkScale.value = withDelay(
+        80,
+        withSequence(
+          withSpring(1.18, { damping: 8 }),
+          withSpring(1, { damping: 11 }),
+        ),
+      );
+    } else {
+      checkOpacity.value = withTiming(0, { duration: 100 });
+      checkScale.value = withTiming(0, { duration: 100 });
+    }
+  }, [done, checkOpacity, checkScale]);
+
+  const checkStyle = useAnimatedStyle(() => ({
+    opacity: checkOpacity.value,
+    transform: [{ scale: checkScale.value }],
+  }));
 
   return (
     <Pressable
@@ -81,23 +115,34 @@ export function QuestRow({ template, done, disabled = false, onPress }: Props) {
         ) : null}
       </View>
 
-      {/* 완료 체크 또는 XP chip */}
-      <View style={{ marginLeft: 12, alignItems: "flex-end" }}>
+      {/* 우측 영역: done이면 체크 타일이 entrance 애니메이션, 아니면 XP chip */}
+      <View
+        style={{
+          marginLeft: 12,
+          alignItems: "flex-end",
+          justifyContent: "center",
+          minWidth: CHECK_BOX,
+          minHeight: CHECK_BOX,
+        }}
+      >
         {done ? (
-          <View
-            style={{
-              width: 28,
-              height: 28,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: PIXEL_RADIUS.md,
-              borderWidth: PIXEL_BORDER_WIDTH,
-              borderColor: COLORS.ink,
-              backgroundColor: COLORS.gold,
-            }}
+          <Animated.View
+            style={[
+              {
+                width: CHECK_BOX,
+                height: CHECK_BOX,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: PIXEL_RADIUS.md,
+                borderWidth: PIXEL_BORDER_WIDTH,
+                borderColor: COLORS.ink,
+                backgroundColor: COLORS.gold,
+              },
+              checkStyle,
+            ]}
           >
             <CheckIcon size={16} />
-          </View>
+          </Animated.View>
         ) : (
           <View
             style={{

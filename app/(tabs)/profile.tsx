@@ -3,6 +3,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PIXEL_FONT } from "@/components/pixelStyles";
 import { CLASS_BY_ID, getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
@@ -116,7 +117,15 @@ export default function Profile() {
         className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 140 }}
       >
-        <Text className="mb-4 text-2xl font-bold text-gold">
+        <Text
+          style={{
+            marginBottom: 16,
+            fontFamily: PIXEL_FONT.display,
+            fontSize: 26,
+            color: COLORS.gold,
+            letterSpacing: 1,
+          }}
+        >
           {STRINGS.profile.title}
         </Text>
 
