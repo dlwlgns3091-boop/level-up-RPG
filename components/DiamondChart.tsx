@@ -2,6 +2,7 @@ import { View } from "react-native";
 import Svg, { Circle, Line, Polygon, Text as SvgText } from "react-native-svg";
 import { CATEGORIES } from "@/constants/categories";
 import { COLORS } from "@/constants/theme";
+import { PIXEL_FONT } from "@/components/pixelStyles";
 import type { CategoryXP } from "@/types/category";
 
 type Props = {
@@ -69,7 +70,7 @@ export function DiamondChart({ stats, size = 240 }: Props) {
               y1={cy}
               x2={cx + radius * Math.cos(a)}
               y2={cy + radius * Math.sin(a)}
-              stroke={COLORS.bgSofter}
+              stroke={COLORS.ink}
               strokeWidth={1}
             />
           );
@@ -108,7 +109,7 @@ export function DiamondChart({ stats, size = 240 }: Props) {
               y={cy + lr * Math.sin(a)}
               fill={COLORS.category[key]}
               fontSize={12}
-              fontWeight="bold"
+              fontFamily={PIXEL_FONT.uiBold}
               textAnchor="middle"
               alignmentBaseline="middle"
             >

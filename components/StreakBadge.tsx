@@ -1,7 +1,14 @@
 import { Text, View } from "react-native";
+import { FlagIcon, StarIcon } from "@/components/sprites";
 import { COLORS } from "@/constants/theme";
 import { calculateStreakBonus } from "@/db/streak";
 import type { Streak } from "@/db/types";
+import {
+  PIXEL_BORDER_WIDTH,
+  PIXEL_FONT,
+  PIXEL_RADIUS,
+  steppedShadow,
+} from "./pixelStyles";
 
 type Props = {
   streak: Streak;
@@ -13,15 +20,44 @@ export function StreakBadge({ streak }: Props) {
 
   if (days <= 0) {
     return (
-      <View className="rounded-2xl border border-bg-softer bg-bg-soft p-3">
-        <Text className="text-center text-xs text-text-muted">
-          첫 퀘스트를 완료하면 연속 달성이 시작됩니다 🔥
-        </Text>
-        {longest > 0 ? (
-          <Text className="mt-1 text-center text-[11px] text-text-muted">
-            최고 기록: {longest}일
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          padding: 12,
+          borderRadius: PIXEL_RADIUS.lg,
+          borderWidth: PIXEL_BORDER_WIDTH,
+          borderColor: COLORS.ink,
+          backgroundColor: COLORS.bgSoft,
+          ...steppedShadow(3),
+        }}
+      >
+        <View style={{ marginRight: 10 }}>
+          <StarIcon size={20} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 12,
+              color: COLORS.textMuted,
+            }}
+          >
+            첫 퀘스트를 완료하면 연속 달성이 시작됩니다
           </Text>
-        ) : null}
+          {longest > 0 ? (
+            <Text
+              style={{
+                marginTop: 2,
+                fontFamily: PIXEL_FONT.ui,
+                fontSize: 11,
+                color: COLORS.textSubtle,
+              }}
+            >
+              최고 기록: {longest}일
+            </Text>
+          ) : null}
+        </View>
       </View>
     );
   }
@@ -29,17 +65,74 @@ export function StreakBadge({ streak }: Props) {
   const mult = calculateStreakBonus(streak);
   return (
     <View
-      className="rounded-2xl border bg-bg-soft p-3"
-      style={{ borderColor: `${COLORS.gold}66` }}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 12,
+        borderRadius: PIXEL_RADIUS.lg,
+        borderWidth: PIXEL_BORDER_WIDTH,
+        borderColor: COLORS.ink,
+        backgroundColor: COLORS.bgSoft,
+        ...steppedShadow(3),
+      }}
     >
-      <Text className="text-center text-sm text-gold">
-        🔥 연속 {days}일 달성 중 ({mult.toFixed(2)}x XP)
-      </Text>
-      {longest > days ? (
-        <Text className="mt-1 text-center text-[11px] text-text-muted">
-          최고 기록 {longest}일
+      <View
+        style={{
+          marginRight: 12,
+          width: 36,
+          height: 36,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: PIXEL_RADIUS.md,
+          borderWidth: PIXEL_BORDER_WIDTH,
+          borderColor: COLORS.ink,
+          backgroundColor: `${COLORS.gold}33`,
+        }}
+      >
+        <FlagIcon size={20} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{
+            fontFamily: PIXEL_FONT.display,
+            fontSize: 20,
+            color: COLORS.gold,
+            lineHeight: 22,
+          }}
+        >
+          {days}
+          <Text
+            style={{
+              fontFamily: PIXEL_FONT.uiBold,
+              fontSize: 12,
+              color: COLORS.gold,
+            }}
+          >
+            {" 일 연속  "}
+          </Text>
+          <Text
+            style={{
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 11,
+              color: COLORS.textMuted,
+            }}
+          >
+            ({mult.toFixed(2)}x XP)
+          </Text>
         </Text>
-      ) : null}
+        {longest > days ? (
+          <Text
+            style={{
+              marginTop: 2,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 11,
+              color: COLORS.textSubtle,
+            }}
+          >
+            최고 기록 {longest}일
+          </Text>
+        ) : null}
+      </View>
     </View>
   );
 }

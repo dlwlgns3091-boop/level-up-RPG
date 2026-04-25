@@ -1,9 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
+import { ClassSprite } from "@/components/sprites";
 import { getClass } from "@/constants/classes";
 import { COLORS } from "@/constants/theme";
 import { xpForNextLevel } from "@/db/leveling";
 import type { Character } from "@/db/types";
+import { PIXEL_FONT, PIXEL_RADIUS, pixelCard } from "./pixelStyles";
 import { XpBar } from "./XpBar";
 
 type Props = {
@@ -16,29 +17,64 @@ export function CharacterCard({ character }: Props) {
   const ratio = Math.min(1, character.current_xp / need);
 
   return (
-    <View className="rounded-3xl border border-bg-softer bg-bg-soft p-5">
-      <View className="flex-row items-center">
+    <View
+      style={{
+        backgroundColor: COLORS.bgSoft,
+        padding: 20,
+        ...pixelCard(PIXEL_RADIUS.lg, 4),
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View
-          className="mr-4 h-16 w-16 items-center justify-center rounded-2xl"
-          style={{ backgroundColor: `${COLORS.gold}33` }}
+          style={{
+            marginRight: 16,
+            width: 72,
+            height: 72,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: PIXEL_RADIUS.lg,
+            backgroundColor: COLORS.bgSofter,
+            borderWidth: 2,
+            borderColor: COLORS.ink,
+          }}
         >
-          <Ionicons name="person" size={32} color={COLORS.gold} />
+          <ClassSprite classId={character.current_class_id} size={56} />
         </View>
 
-        <View className="flex-1">
-          <Text className="text-lg font-bold text-text">
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              fontFamily: PIXEL_FONT.uiBold,
+              fontSize: 18,
+              color: COLORS.text,
+            }}
+          >
             {character.name}
           </Text>
-          <Text className="mt-0.5 text-sm font-semibold text-gold">
+          <Text
+            style={{
+              marginTop: 2,
+              fontFamily: PIXEL_FONT.uiBold,
+              fontSize: 13,
+              color: COLORS.gold,
+            }}
+          >
             {def.nameKo}
           </Text>
-          <Text className="mt-0.5 text-xs text-text-muted">
+          <Text
+            style={{
+              marginTop: 2,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 11,
+              color: COLORS.textMuted,
+            }}
+          >
             Lv.{character.level} · {def.flavor}
           </Text>
         </View>
       </View>
 
-      <View className="mt-4">
+      <View style={{ marginTop: 16 }}>
         <XpBar current={character.current_xp} need={need} ratio={ratio} />
       </View>
     </View>

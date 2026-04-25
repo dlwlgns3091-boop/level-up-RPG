@@ -1,8 +1,14 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
+import { CategoryIcon, CheckIcon } from "@/components/sprites";
 import { CATEGORY_LABELS_KO } from "@/constants/categories";
 import { COLORS } from "@/constants/theme";
 import type { QuestTemplate } from "@/db/types";
+import {
+  PIXEL_BORDER_WIDTH,
+  PIXEL_FONT,
+  PIXEL_RADIUS,
+  steppedShadow,
+} from "./pixelStyles";
 
 type Props = {
   template: QuestTemplate;
@@ -11,52 +17,109 @@ type Props = {
   onPress: () => void;
 };
 
+const ICON_BOX = 44;
+
 export function QuestRow({ template, done, disabled = false, onPress }: Props) {
   const color = COLORS.category[template.category];
 
   return (
     <Pressable
       onPress={disabled ? undefined : onPress}
-      className={`mb-3 flex-row items-center rounded-2xl border p-4 ${
-        done
-          ? "border-bg-softer bg-bg-soft opacity-60"
-          : "border-bg-softer bg-bg-soft active:opacity-80"
-      }`}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+        padding: 14,
+        borderRadius: PIXEL_RADIUS.lg,
+        borderWidth: PIXEL_BORDER_WIDTH,
+        borderColor: COLORS.ink,
+        backgroundColor: COLORS.bgSoft,
+        opacity: done ? 0.65 : 1,
+        ...steppedShadow(3),
+      }}
     >
+      {/* 카테고리 아이콘 박스 */}
       <View
-        className="mr-3 h-8 w-8 items-center justify-center rounded-lg border"
         style={{
-          borderColor: done ? COLORS.gold : COLORS.textMuted,
-          backgroundColor: done ? COLORS.gold : "transparent",
+          width: ICON_BOX,
+          height: ICON_BOX,
+          marginRight: 12,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: PIXEL_RADIUS.md,
+          borderWidth: PIXEL_BORDER_WIDTH,
+          borderColor: COLORS.ink,
+          backgroundColor: `${color}33`,
         }}
       >
-        {done ? <Ionicons name="checkmark" size={18} color={COLORS.bg} /> : null}
+        <CategoryIcon category={template.category} size={24} />
       </View>
 
-      <View className="flex-1">
+      <View style={{ flex: 1 }}>
         <Text
-          className={`text-base font-semibold text-text ${
-            done ? "line-through" : ""
-          }`}
+          style={{
+            fontFamily: PIXEL_FONT.uiBold,
+            fontSize: 14,
+            color: COLORS.text,
+            textDecorationLine: done ? "line-through" : "none",
+          }}
         >
           {template.title}
         </Text>
         {template.description ? (
-          <Text className="mt-0.5 text-xs text-text-muted" numberOfLines={1}>
+          <Text
+            style={{
+              marginTop: 2,
+              fontFamily: PIXEL_FONT.ui,
+              fontSize: 11,
+              color: COLORS.textMuted,
+            }}
+            numberOfLines={1}
+          >
             {template.description}
           </Text>
         ) : null}
       </View>
 
-      <View className="ml-3 items-end">
-        <View
-          className="rounded-full px-2 py-0.5"
-          style={{ backgroundColor: `${color}33` }}
-        >
-          <Text className="text-xs font-semibold" style={{ color }}>
-            +{template.xp_reward} {CATEGORY_LABELS_KO[template.category]}
-          </Text>
-        </View>
+      {/* 완료 체크 또는 XP chip */}
+      <View style={{ marginLeft: 12, alignItems: "flex-end" }}>
+        {done ? (
+          <View
+            style={{
+              width: 28,
+              height: 28,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: PIXEL_RADIUS.md,
+              borderWidth: PIXEL_BORDER_WIDTH,
+              borderColor: COLORS.ink,
+              backgroundColor: COLORS.gold,
+            }}
+          >
+            <CheckIcon size={16} />
+          </View>
+        ) : (
+          <View
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: PIXEL_RADIUS.pill,
+              borderWidth: PIXEL_BORDER_WIDTH,
+              borderColor: COLORS.ink,
+              backgroundColor: `${color}33`,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: PIXEL_FONT.uiBold,
+                fontSize: 11,
+                color,
+              }}
+            >
+              +{template.xp_reward} {CATEGORY_LABELS_KO[template.category]}
+            </Text>
+          </View>
+        )}
       </View>
     </Pressable>
   );

@@ -1,4 +1,10 @@
 import { Pressable, Text, View } from "react-native";
+import { COLORS } from "@/constants/theme";
+import {
+  PIXEL_BORDER_WIDTH,
+  PIXEL_FONT,
+  PIXEL_RADIUS,
+} from "./pixelStyles";
 
 export type SegmentOption<K extends string> = {
   key: K;
@@ -17,21 +23,39 @@ export function SegmentedTabs<K extends string>({
   onChange,
 }: Props<K>) {
   return (
-    <View className="flex-row rounded-2xl border border-bg-softer bg-bg-soft p-1">
+    <View
+      style={{
+        flexDirection: "row",
+        padding: 4,
+        borderRadius: PIXEL_RADIUS.lg,
+        borderWidth: PIXEL_BORDER_WIDTH,
+        borderColor: COLORS.ink,
+        backgroundColor: COLORS.bgSoft,
+      }}
+    >
       {options.map((opt) => {
         const active = opt.key === value;
         return (
           <Pressable
             key={opt.key}
             onPress={() => onChange(opt.key)}
-            className={`flex-1 items-center justify-center rounded-xl px-3 py-2 ${
-              active ? "bg-gold" : "bg-transparent active:opacity-70"
-            }`}
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: PIXEL_RADIUS.md,
+              backgroundColor: active ? COLORS.gold : "transparent",
+            }}
           >
             <Text
-              className={`text-sm font-semibold ${
-                active ? "text-bg" : "text-text-muted"
-              }`}
+              style={{
+                fontFamily: PIXEL_FONT.uiBold,
+                fontSize: 12,
+                color: active ? COLORS.ink : COLORS.textMuted,
+                letterSpacing: 0.3,
+              }}
             >
               {opt.label}
             </Text>
