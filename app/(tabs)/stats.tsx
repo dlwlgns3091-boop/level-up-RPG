@@ -4,7 +4,6 @@ import { DiamondChart } from "@/components/DiamondChart";
 import { CATEGORIES, CATEGORY_LABELS_KO } from "@/constants/categories";
 import { getClass } from "@/constants/classes";
 import { STRINGS } from "@/constants/strings.ko";
-import { COLORS } from "@/constants/theme";
 import { useCharacterStore } from "@/store/useCharacterStore";
 import { pickCategoryXp } from "@/types/category";
 
@@ -97,7 +96,7 @@ export default function Stats() {
             매 레벨업마다 활동 비율을 기준으로 직업이 자동 재평가됩니다. 카테고리 색상이 곧 그 카테고리의 정체성입니다.
           </Text>
           <Text className="mt-1 text-[11px] text-text-muted">
-            팁: {COLORS.gold === "#FCD34D" ? "" : ""}한 카테고리에 60%+ 집중하면 순수형, 4개를 비등하게 키우면 퍼펙트 휴먼.
+            팁: 한 카테고리에 60%+ 집중하면 순수형, 4개를 비등하게 키우면 퍼펙트 휴먼.
           </Text>
         </View>
       </ScrollView>
