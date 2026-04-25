@@ -6,6 +6,7 @@ import {
   fetchMyCouple,
   redeemInvite,
   translateCoupleError,
+  updateAnniversary as apiUpdateAnniversary,
 } from "@/lib/couples";
 import { SUPABASE_CONFIGURED, supabase } from "@/lib/supabase";
 
@@ -23,6 +24,7 @@ type CoupleState = {
   createInvite: () => Promise<CoupleActionResult>;
   redeem: (code: string) => Promise<CoupleActionResult>;
   cancelInvite: () => Promise<void>;
+  setAnniversary: (date: string | null) => Promise<CoupleActionResult>;
   clear: () => void;
 };
 
@@ -98,6 +100,26 @@ export const useCoupleStore = create<CoupleState>((set, get) => ({
     } catch (e) {
       console.error("[couple] cancelInvite error:", e);
       set({ lastError: translateCoupleError(e) });
+    } finally {
+      set({ busy: false });
+    }
+  },
+
+  setAnniversary: async (date) => {
+    const current = get().couple;
+    if (!current) {
+      return { ok: false, errorMessage: "커플 정보가 없습니다." };
+    }
+    set({ busy: true });
+    try {
+      const updated = await apiUpdateAnniversary(current.id, date);
+      set({ couple: updated, lastError: null });
+      return { ok: true };
+    } catch (e) {
+      console.error("[couple] setAnniversary error:", e);
+      const pretty = translateCoupleError(e);
+      set({ lastError: pretty });
+      return { ok: false, errorMessage: pretty };
     } finally {
       set({ busy: false });
     }

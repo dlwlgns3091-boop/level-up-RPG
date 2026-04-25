@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -12,11 +13,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Calendar as RNCalendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
 import { daysSince } from "@/lib/couples";
+import { useOnlineStatus } from "@/lib/network";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCoupleStore } from "@/store/useCoupleStore";
@@ -155,6 +158,7 @@ function LoggedOutView({ onLogin }: { onLogin: () => void }) {
 function UnconnectedView({ busy }: { busy: boolean }) {
   const createInvite = useCoupleStore((s) => s.createInvite);
   const redeem = useCoupleStore((s) => s.redeem);
+  const { isOnline } = useOnlineStatus();
 
   const [code, setCode] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -174,6 +178,8 @@ function UnconnectedView({ busy }: { busy: boolean }) {
     const result = await redeem(code);
     if (!result.ok) setErrorMessage(result.errorMessage);
   };
+
+  const blockedByOffline = !isOnline;
 
   return (
     <KeyboardAvoidingView
@@ -203,7 +209,7 @@ function UnconnectedView({ busy }: { busy: boolean }) {
             <PrimaryButton
               label="초대 코드 생성"
               onPress={handleCreate}
-              disabled={busy}
+              disabled={busy || blockedByOffline}
             />
           </View>
         </Section>
@@ -233,7 +239,7 @@ function UnconnectedView({ busy }: { busy: boolean }) {
             <PrimaryButton
               label="연결"
               onPress={handleRedeem}
-              disabled={busy || code.trim().length < 6}
+              disabled={busy || blockedByOffline || code.trim().length < 6}
             />
           </View>
         </Section>
@@ -363,6 +369,30 @@ function ConnectedView({
   const router = useRouter();
   const dPlus = useMemo(() => daysSince(anniversary), [anniversary]);
   const partnerId = meId === userA ? userB : userA;
+  const setAnniversary = useCoupleStore((s) => s.setAnniversary);
+  const busy = useCoupleStore((s) => s.busy);
+  const { isOnline } = useOnlineStatus();
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+
+  const handlePickDate = async (date: string | null) => {
+    setDatePickerVisible(false);
+    if (date === anniversary) return;
+    const result = await setAnniversary(date);
+    if (!result.ok) Alert.alert("저장 실패", result.errorMessage);
+  };
+
+  const handleClearDate = () => {
+    Alert.alert("만난 날 지우기", "D+ 표시가 사라집니다.", [
+      { text: STRINGS.common.cancel, style: "cancel" },
+      {
+        text: "지우기",
+        style: "destructive",
+        onPress: () => {
+          handlePickDate(null);
+        },
+      },
+    ]);
+  };
 
   return (
     <ScrollView
@@ -389,6 +419,28 @@ function ConnectedView({
               </Text>
             ) : null}
           </View>
+        </View>
+
+        <View className="mt-4 flex-row">
+          <Pressable
+            onPress={() => setDatePickerVisible(true)}
+            disabled={!isOnline || busy}
+            className="mr-2 flex-1 flex-row items-center justify-center rounded-xl border border-bg-softer bg-bg px-3 py-2 active:opacity-80"
+          >
+            <Ionicons name="calendar" size={14} color={COLORS.gold} />
+            <Text className="ml-1 text-xs text-text-muted">
+              {anniversary ? `만난 날: ${anniversary}` : "만난 날 설정"}
+            </Text>
+          </Pressable>
+          {anniversary ? (
+            <Pressable
+              onPress={handleClearDate}
+              disabled={!isOnline || busy}
+              className="flex-row items-center justify-center rounded-xl border border-bg-softer bg-bg px-3 py-2 active:opacity-80"
+            >
+              <Ionicons name="close" size={14} color={COLORS.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
 
         <View className="mt-4 rounded-xl bg-bg p-3">
@@ -418,8 +470,69 @@ function ConnectedView({
           onPress={() => router.push("/photos")}
         />
       </Section>
+
+      <Modal
+        visible={datePickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDatePickerVisible(false)}
+      >
+        <Pressable
+          onPress={() => setDatePickerVisible(false)}
+          className="flex-1 items-center justify-center bg-black/70 px-6"
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="w-full max-w-md overflow-hidden rounded-3xl border border-bg-softer bg-bg-soft"
+          >
+            <View className="px-4 pt-3 pb-2">
+              <Text className="text-center text-sm font-semibold text-text">
+                만난 날 선택
+              </Text>
+            </View>
+            <RNCalendar
+              current={anniversary ?? undefined}
+              markedDates={
+                anniversary
+                  ? { [anniversary]: { selected: true } }
+                  : undefined
+              }
+              onDayPress={(day) => {
+                handlePickDate(day.dateString);
+              }}
+              theme={ANNIVERSARY_CALENDAR_THEME}
+              monthFormat={"yyyy년 M월"}
+              enableSwipeMonths
+              firstDay={0}
+              maxDate={todayKst()}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </ScrollView>
   );
+}
+
+const ANNIVERSARY_CALENDAR_THEME = {
+  backgroundColor: COLORS.bgSoft,
+  calendarBackground: COLORS.bgSoft,
+  textSectionTitleColor: COLORS.textMuted,
+  dayTextColor: COLORS.text,
+  todayTextColor: COLORS.gold,
+  selectedDayTextColor: COLORS.bg,
+  selectedDayBackgroundColor: COLORS.gold,
+  monthTextColor: COLORS.text,
+  arrowColor: COLORS.gold,
+  textDisabledColor: COLORS.bgSofter,
+};
+
+function todayKst(): string {
+  const ms = 9 * 60 * 60 * 1000;
+  const d = new Date(Date.now() + ms);
+  const y = d.getUTCFullYear().toString().padStart(4, "0");
+  const m = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+  const dd = d.getUTCDate().toString().padStart(2, "0");
+  return `${y}-${m}-${dd}`;
 }
 
 function Section({

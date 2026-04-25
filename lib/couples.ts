@@ -83,6 +83,21 @@ export async function redeemInvite(code: string): Promise<string> {
   return data;
 }
 
+export async function updateAnniversary(
+  coupleId: string,
+  anniversary: string | null,
+): Promise<Couple> {
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from("couples")
+    .update({ anniversary })
+    .eq("id", coupleId)
+    .select()
+    .single<Couple>();
+  if (error || !data) throw error ?? new Error("anniversary_update_failed");
+  return data;
+}
+
 /** 연결 전(user_b가 없는) 자기 초대만 삭제 가능. */
 export async function cancelPendingInvite(coupleId: string): Promise<void> {
   const supabase = requireSupabase();

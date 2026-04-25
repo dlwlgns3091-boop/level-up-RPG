@@ -8,6 +8,7 @@ import {
   Dimensions,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -15,8 +16,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { CenteredSpinner } from "@/components/Spinner";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
+import { useOnlineStatus } from "@/lib/network";
 import { extractTakenAt } from "@/lib/photos";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCoupleStore } from "@/store/useCoupleStore";
@@ -47,8 +50,11 @@ export default function PhotosGrid() {
   const load = usePhotoStore((s) => s.load);
   const upload = usePhotoStore((s) => s.upload);
 
+  const { isOnline } = useOnlineStatus();
+
   const [pending, setPending] = useState<PendingUpload | null>(null);
   const [captionInput, setCaptionInput] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -58,10 +64,27 @@ export default function PhotosGrid() {
 
   const groups = useMemo(() => groupByDate(photos), [photos]);
 
-  const canUpload = Boolean(couple?.id && couple.user_b && user?.id);
+  const canUpload = Boolean(
+    couple?.id && couple.user_b && user?.id && isOnline,
+  );
+
+  const onRefresh = useCallback(async () => {
+    if (!couple?.id) return;
+    setRefreshing(true);
+    try {
+      await load(couple.id);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [couple?.id, load]);
 
   const handlePick = async () => {
-    if (!canUpload) return;
+    if (!canUpload) {
+      if (!isOnline) {
+        Alert.alert("오프라인", "사진 업로드는 인터넷 연결이 필요합니다.");
+      }
+      return;
+    }
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert(
@@ -140,15 +163,21 @@ export default function PhotosGrid() {
       />
 
       {isLoading && photos.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-text-muted">사진 불러오는 중…</Text>
-        </View>
+        <CenteredSpinner label="사진 불러오는 중…" />
       ) : photos.length === 0 ? (
         <EmptyState onAdd={handlePick} busy={busy} />
       ) : (
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={COLORS.gold}
+              colors={[COLORS.gold]}
+            />
+          }
         >
           {groups.map(({ dateKey, items }) => (
             <View key={dateKey} className="mb-4">

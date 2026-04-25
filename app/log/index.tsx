@@ -1,10 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { CenteredSpinner } from "@/components/Spinner";
 import { COLORS } from "@/constants/theme";
+import { useOnlineStatus } from "@/lib/network";
 import { useCoupleStore } from "@/store/useCoupleStore";
 import { useEventStore } from "@/store/useEventStore";
 import { usePhotoStore } from "@/store/usePhotoStore";
@@ -23,6 +31,9 @@ export default function LogScreen() {
   const signedUrls = usePhotoStore((s) => s.signedUrls);
   const loadPhotos = usePhotoStore((s) => s.load);
 
+  const { isOnline } = useOnlineStatus();
+  const [refreshing, setRefreshing] = useState(false);
+
   useFocusEffect(
     useCallback(() => {
       if (couple?.id) {
@@ -31,6 +42,16 @@ export default function LogScreen() {
       }
     }, [couple?.id, loadEvents, loadPhotos]),
   );
+
+  const onRefresh = useCallback(async () => {
+    if (!couple?.id) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([loadEvents(couple.id), loadPhotos(couple.id)]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [couple?.id, loadEvents, loadPhotos]);
 
   // 사진이 이벤트에 묶여 있으면 그 섬네일을 이벤트 카드에 보여준다.
   const photosByEvent = useMemo(() => {
@@ -45,12 +66,6 @@ export default function LogScreen() {
   }, [photos]);
 
   const grouped = useMemo(() => groupByDate(events), [events]);
-
-  // 방금 돌아왔을 때 signed URL 재조회 — 내부에서 load()가 이미 signUrls를 호출하므로 no-op이지만
-  // 첫 렌더에 대비해 URL 없는 썸네일이 있으면 로드 시도.
-  useEffect(() => {
-    // nothing additional; usePhotoStore.load() already batch-signs.
-  }, []);
 
   if (!couple || !couple.user_b) {
     return (
@@ -74,17 +89,20 @@ export default function LogScreen() {
         right={
           <Pressable
             onPress={() => router.push("/events/new")}
+            disabled={!isOnline}
             className="p-1"
           >
-            <Ionicons name="add-circle" size={28} color={COLORS.gold} />
+            <Ionicons
+              name="add-circle"
+              size={28}
+              color={isOnline ? COLORS.gold : COLORS.textMuted}
+            />
           </Pressable>
         }
       />
 
       {isLoading && events.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-text-muted">불러오는 중…</Text>
-        </View>
+        <CenteredSpinner label="불러오는 중…" />
       ) : events.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
           <Ionicons name="journal" size={48} color={COLORS.textMuted} />
@@ -105,6 +123,14 @@ export default function LogScreen() {
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={COLORS.gold}
+              colors={[COLORS.gold]}
+            />
+          }
         >
           {grouped.map(({ dateKey, items }) => (
             <View key={dateKey} className="mb-5">

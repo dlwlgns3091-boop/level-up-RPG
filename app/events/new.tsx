@@ -19,6 +19,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
+import { useOnlineStatus } from "@/lib/network";
 import { extractTakenAt } from "@/lib/photos";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useCoupleStore } from "@/store/useCoupleStore";
@@ -52,6 +53,7 @@ export default function NewEvent() {
   const createEvent = useEventStore((s) => s.create);
   const busy = useEventStore((s) => s.busy);
   const reloadPhotos = usePhotoStore((s) => s.load);
+  const { isOnline } = useOnlineStatus();
 
   const [eventDate, setEventDate] = useState<string>(
     typeof params.date === "string" ? params.date : todayKst(),
@@ -66,6 +68,7 @@ export default function NewEvent() {
     !!couple?.id &&
     !!couple.user_b &&
     !!user?.id &&
+    isOnline &&
     trimmedTitle.length > 0 &&
     trimmedTitle.length <= 40;
 

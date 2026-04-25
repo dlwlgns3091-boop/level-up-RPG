@@ -1,10 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { Calendar } from "react-native-calendars";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Spinner } from "@/components/Spinner";
 import { COLORS } from "@/constants/theme";
+import { useOnlineStatus } from "@/lib/network";
 import { useCoupleStore } from "@/store/useCoupleStore";
 import { useEventStore } from "@/store/useEventStore";
 
@@ -33,7 +41,19 @@ export default function CalendarScreen() {
   const isLoading = useEventStore((s) => s.isLoading);
   const load = useEventStore((s) => s.load);
 
+  const { isOnline } = useOnlineStatus();
   const [selected, setSelected] = useState<string | null>(todayKst());
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    if (!couple?.id) return;
+    setRefreshing(true);
+    try {
+      await load(couple.id);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [couple?.id, load]);
 
   useFocusEffect(
     useCallback(() => {
@@ -90,14 +110,30 @@ export default function CalendarScreen() {
                 params: selected ? { date: selected } : {},
               })
             }
+            disabled={!isOnline}
             className="p-1"
           >
-            <Ionicons name="add-circle" size={28} color={COLORS.gold} />
+            <Ionicons
+              name="add-circle"
+              size={28}
+              color={isOnline ? COLORS.gold : COLORS.textMuted}
+            />
           </Pressable>
         }
       />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 40 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.gold}
+            colors={[COLORS.gold]}
+          />
+        }
+      >
         <View className="m-5 overflow-hidden rounded-2xl border border-bg-softer">
           <Calendar
             markedDates={markedDates}
@@ -117,9 +153,9 @@ export default function CalendarScreen() {
           </Text>
 
           {isLoading && events.length === 0 ? (
-            <Text className="text-center text-xs text-text-muted">
-              불러오는 중…
-            </Text>
+            <View className="py-6">
+              <Spinner label="불러오는 중…" />
+            </View>
           ) : eventsForSelected.length === 0 ? (
             <View className="items-center rounded-2xl border border-bg-softer bg-bg-soft p-6">
               <Text className="text-sm text-text-muted">이 날엔 기록이 없습니다.</Text>

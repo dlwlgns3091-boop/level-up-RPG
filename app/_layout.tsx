@@ -2,7 +2,9 @@ import "../global.css";
 import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { configureNotificationSystem } from "@/lib/notifications";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -31,7 +33,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
-      <Stack
+      <View style={{ flex: 1, backgroundColor: "#0F172A" }}>
+        <OfflineBanner />
+        <Stack
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: "#0F172A" },
@@ -61,7 +65,8 @@ export default function RootLayout() {
           name="modals/class-change"
           options={{ presentation: "transparentModal", animation: "fade" }}
         />
-      </Stack>
+        </Stack>
+      </View>
     </SafeAreaProvider>
   );
 }

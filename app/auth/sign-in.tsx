@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { STRINGS } from "@/constants/strings.ko";
 import { COLORS } from "@/constants/theme";
+import { useOnlineStatus } from "@/lib/network";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -21,13 +22,14 @@ export default function SignIn() {
   const router = useRouter();
   const signIn = useAuthStore((s) => s.signIn);
   const busy = useAuthStore((s) => s.busy);
+  const { isOnline } = useOnlineStatus();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const trimmedEmail = email.trim();
-  const isValid = trimmedEmail.length > 0 && password.length >= 6;
+  const isValid = trimmedEmail.length > 0 && password.length >= 6 && isOnline;
 
   const handleSubmit = async () => {
     if (!isValid || busy) return;
