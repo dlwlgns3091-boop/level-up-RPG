@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CharacterCard } from "@/components/CharacterCard";
 import { DiamondChart } from "@/components/DiamondChart";
@@ -17,12 +17,48 @@ export default function Home() {
   const streak = useCharacterStore((s) => s.streak);
   const todayQuests = useCharacterStore((s) => s.todayQuests);
   const completeQuest = useCharacterStore((s) => s.completeQuest);
+  const deactivateQuestTemplate = useCharacterStore(
+    (s) => s.deactivateQuestTemplate,
+  );
   const refreshForNewDay = useCharacterStore((s) => s.refreshForNewDay);
 
   useFocusEffect(
     useCallback(() => {
       refreshForNewDay();
     }, [refreshForNewDay]),
+  );
+
+  const onLongPressQuest = useCallback(
+    (templateId: number, title: string) => {
+      Alert.alert(
+        "퀘스트 삭제",
+        `"${title}" 을(를) 삭제할까요?\n오늘의 추천에서 사라지고 다시 자동 생성되지 않습니다. 받은 XP는 보존됩니다.`,
+        [
+          { text: STRINGS.common.cancel, style: "cancel" },
+          {
+            text: "삭제",
+            style: "destructive",
+            onPress: () => {
+              const result = deactivateQuestTemplate(templateId);
+              if (!result.ok) {
+                if (result.reason === "completed_in_past") {
+                  Alert.alert(
+                    "삭제 불가",
+                    "이미 완료한 기록이 있는 퀘스트는 삭제할 수 없습니다 (XP 기록 보존).",
+                  );
+                } else {
+                  Alert.alert(
+                    "삭제 실패",
+                    "퀘스트를 찾을 수 없습니다.",
+                  );
+                }
+              }
+            },
+          },
+        ],
+      );
+    },
+    [deactivateQuestTemplate],
   );
 
   const onToggleQuest = useCallback(
@@ -108,6 +144,11 @@ export default function Home() {
                   template={template}
                   done={done}
                   onPress={() => onToggleQuest(template.id, done)}
+                  onLongPress={
+                    done
+                      ? undefined
+                      : () => onLongPressQuest(template.id, template.title)
+                  }
                 />
               );
             })

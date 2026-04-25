@@ -16,7 +16,13 @@ import {
 } from "@/db/daily";
 import { initDb, resetAllData } from "@/db/init";
 import { applyXpGain, xpForNextLevel } from "@/db/leveling";
-import { getTemplate, insertQuestLog } from "@/db/quest";
+import {
+  deactivateTemplate,
+  getTemplate,
+  hasAnyLogForTemplate,
+  insertQuestLog,
+  purgeTemplateFromDailyQueue,
+} from "@/db/quest";
 import {
   bumpStreakForToday,
   calculateStreakBonus,
@@ -43,6 +49,10 @@ export type CompleteQuestResult = {
   classChange: ClassChangeEvent | null;
 };
 
+export type DeactivateResult =
+  | { ok: true }
+  | { ok: false; reason: "completed_in_past" | "not_found" };
+
 type CharacterState = {
   character: Character | null;
   streak: Streak | null;
@@ -55,6 +65,7 @@ type CharacterState = {
   hydrate: () => void;
   createCharacter: (input: { name: string }) => Character;
   completeQuest: (templateId: number) => CompleteQuestResult | null;
+  deactivateQuestTemplate: (templateId: number) => DeactivateResult;
   refresh: () => void;
   refreshToday: () => void;
   refreshForNewDay: () => void;
@@ -116,6 +127,31 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     if (!character) return;
     ensureTodaySelection(character);
     set({ todayQuests: listTodayQuests() });
+  },
+
+  /**
+   * 퀘스트 템플릿 비활성화 (소프트 삭제).
+   * - 한 번이라도 완료된 적 있으면 차단 (XP 기록 보존 정책).
+   * - daily_quest 큐에서 즉시 제거 → 오늘의 퀘스트 목록에서 사라짐.
+   * - quest_template은 is_active=0으로 마킹만 함 → quest_log FK는 유지.
+   */
+  deactivateQuestTemplate: (templateId) => {
+    const template = getTemplate(templateId);
+    if (!template) {
+      return { ok: false, reason: "not_found" };
+    }
+    if (hasAnyLogForTemplate(templateId)) {
+      return { ok: false, reason: "completed_in_past" };
+    }
+    deactivateTemplate(templateId);
+    purgeTemplateFromDailyQueue(templateId);
+
+    // 오늘의 퀘스트 목록 즉시 갱신. 빈 슬롯이 생겨도 다음날 자동 채워짐.
+    const character = get().character;
+    if (character) {
+      set({ todayQuests: listTodayQuests() });
+    }
+    return { ok: true };
   },
 
   refreshForNewDay: () => {

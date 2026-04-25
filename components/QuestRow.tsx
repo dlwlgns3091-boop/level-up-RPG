@@ -24,12 +24,19 @@ type Props = {
   done: boolean;
   disabled?: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
 };
 
 const ICON_BOX = 44;
 const CHECK_BOX = 28;
 
-export function QuestRow({ template, done, disabled = false, onPress }: Props) {
+export function QuestRow({
+  template,
+  done,
+  disabled = false,
+  onPress,
+  onLongPress,
+}: Props) {
   const color = COLORS.category[template.category];
 
   const checkScale = useSharedValue(done ? 1 : 0);
@@ -59,6 +66,8 @@ export function QuestRow({ template, done, disabled = false, onPress }: Props) {
   return (
     <Pressable
       onPress={disabled ? undefined : onPress}
+      onLongPress={onLongPress}
+      delayLongPress={400}
       style={{
         flexDirection: "row",
         alignItems: "center",

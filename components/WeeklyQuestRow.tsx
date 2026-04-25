@@ -14,14 +14,22 @@ type Props = {
   template: QuestTemplate;
   weekCount: number;
   onPress: () => void;
+  onLongPress?: () => void;
 };
 
-export function WeeklyQuestRow({ template, weekCount, onPress }: Props) {
+export function WeeklyQuestRow({
+  template,
+  weekCount,
+  onPress,
+  onLongPress,
+}: Props) {
   const color = COLORS.category[template.category];
 
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={400}
       style={{
         flexDirection: "row",
         alignItems: "center",

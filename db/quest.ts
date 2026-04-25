@@ -76,6 +76,28 @@ export function deactivateTemplate(id: number): void {
   db.runSync("UPDATE quest_template SET is_active = 0 WHERE id = ?;", [id]);
 }
 
+/**
+ * 해당 템플릿이 한 번이라도 완료된 적 있는지.
+ * true면 사용자 정책상 삭제 차단 (XP 기록 보존).
+ */
+export function hasAnyLogForTemplate(templateId: number): boolean {
+  const db = getDb();
+  const row = db.getFirstSync<{ n: number }>(
+    "SELECT COUNT(*) AS n FROM quest_log WHERE template_id = ?;",
+    [templateId],
+  );
+  return (row?.n ?? 0) > 0;
+}
+
+/**
+ * 비활성화된 템플릿을 daily_quest 큐에서 제거 (오늘 + 향후 슬롯).
+ * 과거 daily_quest 기록도 함께 정리되지만 quest_log엔 영향 없음.
+ */
+export function purgeTemplateFromDailyQueue(templateId: number): void {
+  const db = getDb();
+  db.runSync("DELETE FROM daily_quest WHERE template_id = ?;", [templateId]);
+}
+
 export function insertQuestLog(input: {
   template_id: number;
   xp_gained: number;
